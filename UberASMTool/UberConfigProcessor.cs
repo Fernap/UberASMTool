@@ -22,8 +22,8 @@ namespace UberASMTool
         private string macroLibraryFile = null;
         private readonly List<int>[][] list = new List<int>[3][] { new List<int>[512], new List<int>[7], new List<int>[256] };
         private readonly List<int>[] globalList = new List<int>[3];
-        private int spriteCodeFreeRAM = 0;
-        private int spriteCodeFreeBWRAM = 0;
+        private int freeRAM = 0;
+        private int freeBWRAM = 0;
 
         public string GetLogs()
         {
@@ -41,8 +41,8 @@ namespace UberASMTool
                 MacroLibraryFile = macroLibraryFile,
                 FileASMList = list.Select(c => c.Select(d => d?.ToArray()).ToArray()).ToArray(),
                 GlobalASMList = globalList.Select(c => c?.ToArray()).ToArray(),
-                SpriteCodeFreeRAM = spriteCodeFreeRAM,
-                SpriteCodeFreeBWRAM = spriteCodeFreeBWRAM,
+                FreeRAM = freeRAM,
+                FreeBWRAM = freeBWRAM,
                 CodeList = codeList.ToArray(),
             };
         }
@@ -129,14 +129,9 @@ namespace UberASMTool
                         if (!ParseGlobalFileDeclaration(ref statusBarFile, "Status Bar ASM", value, i)) return false;
                         continue;
 
-                    case "sprite-sa1:":
-                        if (!ParseHexDefineDeclaration(ref spriteCodeFreeBWRAM,
-                            "sprite code free SA-1 RAM address", valueHex, i)) return false;
-                        continue;
-
-                    case "sprite:":
-                        if (!ParseHexDefineDeclaration(ref spriteCodeFreeRAM,
-                            "sprite code free RAM address", valueHex, i)) return false;
+                    case "freeram:":
+                        if (!ParseHexDefineDeclaration(ref freeRAM,
+                            "Free RAM address", valueHex, i)) return false;
                         continue;
                 }
 

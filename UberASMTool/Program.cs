@@ -637,9 +637,6 @@ namespace UberASMTool
 
 			File.WriteAllText("asm/work/statusbar.asm", global);
 
-			// copy sprites.asm
-			File.Copy("asm/base/sprites.asm", "asm/work/sprites.asm", true);
-
 			// prepare main file
 			StringBuilder mainFile = new StringBuilder();
 
@@ -651,7 +648,7 @@ namespace UberASMTool
 			mainFile.AppendFormat("!overworld_nmi\t= {0}\r\n", enableNmi[1] ? 1 : 0);
 			mainFile.AppendFormat("!gamemode_nmi\t= {0}\r\n", enableNmi[2] ? 1 : 0);
 			mainFile.AppendFormat("!global_nmi\t= {0}\r\n\r\n", enableNmi[3] ? 1 : 0);
-			mainFile.AppendFormat("!sprite_RAM\t= ${0:X6}\r\n\r\n", GetSpriteRAMValue());
+			mainFile.AppendFormat("!UberFreeRAM\t= ${0:X6}\r\n\r\n", GetFreeRAMValue());
 
 			mainFile.AppendLine();
 
@@ -663,10 +660,9 @@ namespace UberASMTool
 			File.WriteAllText("asm/work/main.asm", mainFile.ToString());
 		}
 
-        private static int GetSpriteRAMValue()
+        private static int GetFreeRAMValue()
         {
-            int result = rom.sa1 && config.SpriteCodeFreeBWRAM != 0
-                ? config.SpriteCodeFreeBWRAM : config.SpriteCodeFreeRAM;
+            int result = config.FreeRAM;
 
             if (result == 0)
             {

@@ -34,7 +34,7 @@ freecode
 		PHP
 		AND #$00FF
 		ASL
-		ADC !previous_mode
+		ADC !previous_mode         ; this works because !previous_mode has been set to $0100's value, and !previous_mode+1 always contains 00
 		TAX
 		PLP
 		BNE +
@@ -52,7 +52,7 @@ freecode
 		RTL
 		
 	return:
-		LDA $0100|!addr
+		LDA !previous_mode
 		ASL			
 		TAX			
 		LDA $9329,x		

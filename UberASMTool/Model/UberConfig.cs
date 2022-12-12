@@ -15,8 +15,8 @@ namespace UberASMTool
         public string MacroLibraryFile { get; set; }
         public int[][][] FileASMList { get; set; }
         public int[][] GlobalASMList { get; set; }
-        public int SpriteCodeFreeRAM { get; set; }
-        public int SpriteCodeFreeBWRAM { get; set; }
+        public int FreeRAM { get; set; }
+        public int FreeBWRAM { get; set; }
         public Code[] CodeList { get; set; }
     }
 }

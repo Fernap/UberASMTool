@@ -14,23 +14,17 @@ ORG $05808C
 	
 freecode
 	
-; Do not edit nor move that.
-; That's a special prot table for cleaning external data and codes.
+; Do not edit or move this.
+; It's a special prot table for cleaning external data and codes.
 db "uber"
 prot_table:
 db "tool"
 	
 clear_pointers:
 	STA $7F8182
-	LDA #$00
-	LDX #!sprite_slots*3-1
-	-
-		STA !sprite_RAM,x
-		DEX
-	BPL -
 	
 	LDA #$00
-	STA !previous_mode+1
+	STA !previous_mode+1           ; always 00, so that !previous_mode can be accessed in 16-bit mode
 	DEC
 	STA !previous_mode
 		
@@ -50,13 +44,7 @@ _global_main:
 		BEQ _global_main
 	endif
 	JSR global_main
-	
-	LDA $0100|!addr
-	CMP #$14
-	BNE +
-		JSR sprite_code
-+
-	
+
 	JML $00806F|!bank
 
 load:

@@ -207,17 +207,12 @@ Pretty much same as global code.
    This defines the path for the macro/define library .asm file
 location.
 
- - sprite: <RAM address>
-   This defines what free RAM address will be used to hold the
-sprites early execution pointers and last game mode. Usually you
-should not worry about this RAM address, as the default value should
-work normally. It requires 38 bytes of Free RAM if you're using a
-regular ROM or 68 bytes if you're using SA-1 Pack. It requires more
-bytes on SA-1 ROMs because SA-1 Pack's sprite table is 22 bytes long
-unlike regular SMW which is 12 bytes long. If you plan to use sprites
-early execution pointers, it's recommended to use a free BW-RAM
-address range instead if you're using SA-1, so sprites can modify the
-pointers without invoking SNES CPU.
+ - freeram: <RAM address>
+   Specifies 2 bytes of free RAM used to keep track of the previous
+game mode.  Usually you don't need to worry about this RAM address;
+the default value should work normally.  More may be required in the
+future, but previous versions required 38 (68 on SA-1) bytes, rather
+than the current amount.
 
  - rom: <ROM path>
    This defines what ROM file will be used, relative to the .exe file

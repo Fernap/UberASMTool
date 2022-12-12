@@ -88,9 +88,8 @@ statusbar:      other/status_code.asm
 # A file containing macros.
 macrolib:       other/macro_library.asm
 
-# Sprite-related RAM (see README). You probably don't need to change this.
-sprite:         $7FAC80   # 38 (SNES) or 68 (SA-1) bytes of free RAM.
-sprite-sa1:     $41AC80   # Optional for SA-1 ROMs.
+# Free RAM for UberASMTool (see README). You probably don't need to change this.
+freeram:         $7FAC80   # 2 bytes of free RAM
 
 # The name of your ROM file - this will be used if you don't specify a ROM name
 # when running UberASM Tool.
