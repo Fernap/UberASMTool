@@ -53,7 +53,14 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PlatformTarget>x86</PlatformTarget>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ErrorReport>none</ErrorReport>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="misc\**" />
+    <EmbeddedResource Remove="misc\**" />
+    <None Remove="misc\**" />
+  </ItemGroup>
   <ItemGroup>
     <None Update="asar.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -91,5 +98,10 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Pidgin" Version="3.2.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\AssemblyInfo.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
 </Project>

@@ -1,0 +1,45 @@
+
+-------------
+
+105 foo.asm
+use "level/foo.asm"
+
+105 c:\blah\foo.asm
+
+apply Combine() and it'll give the full path for anything the user types
+
+level:
+105 foo.asm
+
+gamemode:
+14 ../level/foo.asm
+
+will cause both to use the same resource....which could be bad
+
+the only real problem here is that levels have load: while ow/gm don't
+(other labels in the future could have a similar issue)
+
+I guess that's fine though...just waste the 2 bytes for the pointer to load: even if the resource isn't being used for levels
+
+------------
+
+TODO: make sure to note that extra bytes in nmi: on sa-1 must be accessed with $0000-0001 instead of $00-01
+      and, scratch in nmi: on sa-1 must be accessed as $0000-F
+      and sa-1 or lorom must restore any scratch changed
+
+- Oh, I like "Environment" as a general term encompassing level vs. gamemode vs. overworld (not to be confused with System.Environment :/ )
+- Consider having an enum of environment types, and putting everything in arrays of 3 (since that's the enum size),
+  and writing as much as possible with this in mind
+- Fix/double check all the label type offsets in the patches (maybe make these defines)
+- Can always work on overhauling doc when I want
+- check duplicate library filenames (blah, this whole thing sucks)
+
+
+--------------------------
+
+Things for future versions:
+
+- Pixi/GPS-like routine system
+- specify library dependency and expose labels
+- omit a resource from non-nmi call list if that resource only has nmi and no other labels
+

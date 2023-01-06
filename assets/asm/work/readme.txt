@@ -1,1 +1,0 @@
-This is the work folder of UberASM Tool. Currently inserted files are placed here.

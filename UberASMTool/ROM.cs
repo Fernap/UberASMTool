@@ -1,150 +1,226 @@
-﻿using System;
-using System.IO;
+// TODO: be smarter about reading/writing to the actual ROM file
 
-// This controls ROM operations
-// Read/Write, RATS, FreeSpace Detection,
-// etc.
+using System;
 
+namespace UberASMTool;
 
-namespace UberASMTool
+using AsarCLR;
+
+//    public struct Asarlabel
+//    {
+//        public string Name;
+//        public int Location;
+//    }
+
+public static class ROM
 {
-    class ROM
+    private static byte[] romData;        // contains the actual ROM data (without the header if there is one)
+    private static byte[] headerData;     // stays null if ROM is headerless
+    private static string romPath;
+    private static int romSize;
+    public static Dictionary<string, string> defines = new();
+
+    // Add a define -- not implementing a way to remove, and not checking for duplicate keys
+    // don't really need anything fancier
+    public static void AddDefine(string define, string value) => defines[define] = value;
+
+    public static bool Init(string filename)
     {
-        const int maxRomSize = 8389120;     // 8mb + header
-        const int minRomSize = 524288;      // 512kb
-        const int minRomExSize = 1048576;   // 1mb
+        byte[] fileData;
 
-        public byte[] romData;
-		public byte[] header;
+        romPath = filename;
 
-        public bool canOperate;
-        public ushort romType;
-        public bool containsHeader;
-        public string romLocation;
-        public int romSize;
-        public bool sa1;
-
-        public ROM(string filename)
+        if (!File.Exists(romPath))
         {
-            this.romData = File.ReadAllBytes(filename);
-            this.canOperate = false;
-            this.romType = 0;
-            this.containsHeader = false;
-            this.romLocation = filename;
+            MessageWriter.Write(true, $"Error: ROM file \"{romPath}\" not found.");
+            return false;
         }
 
-        public void Init()
+        try
         {
-            int romLength = romData.Length;
-
-            if (romLength > maxRomSize) throw new Exception("ROM too large!");
-            if (romLength < minRomSize) throw new Exception("ROM too small for Super Mario World!");
-            if (romLength < minRomExSize) throw new Exception("ROM must be expanded to 1MB first!");
-
-            this.containsHeader = (romLength % 0x8000) == 512;
-
-            if ((romLength % 0x8000) != 0 && !this.containsHeader)
-                throw new Exception("Invalid ROM block align! ROM corrupted?");
-
-            // 21 bytes long
-            // aaaaaaaaaaa123456789012345678901
-            string smw = "SUPER MARIOWORLD     ";
-
-            int position = 0x7FC0 + (this.containsHeader ? 512 : 0);
-
-            foreach (char character in smw)
-            {
-                if (romData[position++] != character)
-                    throw new Exception("This isn't a Super Mario World ROM!");
-            }
-
-            romType &= 0xffff;
-            romType |= romData[position++];
-            romType |= (ushort)(romData[position++] << 8);
-
-            romSize = romLength - (this.containsHeader ? 512 : 0);
-			header = new byte[512];
-
-            if (this.containsHeader)
-            {
-                byte[] dupe = new byte[romSize];
-				Array.Copy(romData, 0, header, 0, 512);
-                Array.Copy(romData, 512, dupe, 0, romSize);
-                romData = null;
-                romData = dupe;
-            }
-
-            canOperate = true;
-            sa1 = (romType & 255) == 0x23;
+            fileData = File.ReadAllBytes(romPath);
+        }
+        catch (Exception e)
+        {
+            MessageWriter.Write(true, $"Error reading ROM file \"{romPath}\": {e}");
+            return false;
         }
 
-        public void Close()
+        romSize = fileData.Length;
+        if (romSize % 0x8000 == 512)
         {
-            romData = null;
-            romType = 0;
-            canOperate = false;
-            containsHeader = false;
-            romLocation = "";
-            romSize = 0;
+            romSize -= 512;
+            headerData = new byte[512];
+            romData = new byte[romSize];
+            Array.Copy(fileData, headerData, 512);
+            Array.Copy(fileData, 512, romData, 0, romSize);
+        }
+        else
+            romData = fileData;
+
+        if (romSize > 8 * 1024 * 1024)
+        {
+            MessageWriter.Write(true, "ROM file too large.");
+            return false;
+        }
+        if (romSize < 1024 * 1024)
+        {
+            MessageWriter.Write(true, "ROM file too small.  It must be an SMW ROM expanded to at least 1 MB.");
+            return false;
         }
 
-        public void Save()
-        {
-            byte[] final = new byte[romSize + (containsHeader ? 512 : 0)];
-            Array.Copy(romData, 0, final, containsHeader ? 512 : 0, romSize);
-			
-			if (containsHeader)
-			{
-				Array.Copy(header, romData, 512);
-			}
-
-            File.WriteAllBytes(romLocation, final);
-        }
-
-        public bool WriteBlock(byte[] block, int position)
-        {
-            try
+        // 21 bytes long
+        //            123456789012345678901
+        string smw = "SUPER MARIOWORLD     ";
+        for (int i = 0; i < smw.Length; i++)
+            if (romData[0x7FC0 + i] != smw[i])
             {
-                if (!this.canOperate) throw new ArgumentNullException();
-                Array.Copy(block, 0, romData, position, block.Length);
-                block = null;
-                return true;
-            }
-
-            catch
-            {
+                MessageWriter.Write(true, "ROM file does not appear to be a valid Super Mario World ROM.");
                 return false;
             }
-        }
 
-        public int Read24(int pos)
+        return true;
+    }
+
+    // TODO: have this just write directly from romData and headerData instead of copying to a separate buffer
+    public static bool Save()
+    {
+        byte[] final = new byte[romSize + ((headerData != null) ? 512 : 0)];
+
+        headerData?.CopyTo(final, 0);
+        romData.CopyTo(final, headerData == null ? 0 : 512);
+
+        try
         {
-            try
-            {
-                if (!this.canOperate) throw new ArgumentNullException();
-                return romData[pos] | (romData[pos + 1] << 8) | (romData[pos + 2] << 16);
-            }
-
-            catch
-            {
-                return 0;
-            }
+            File.WriteAllBytes(romPath, final);
         }
-
-        public byte[] ReadBlock(int position, int length)
+        catch (Exception e)
         {
-            try
+            MessageWriter.Write(true, $"Error saving ROM file: {e}");
+            MessageWriter.Write(true, $"Please double check the intergrity of your ROM.");
+            return false;
+        }
+
+        return true;
+    }
+
+
+    //        public static bool patch(string patchLocation, ref byte[] romData, string[] includePaths = null,
+    //            bool shouldReset = true, Dictionary<string, string> additionalDefines = null,
+    //            string stdIncludeFile = null, string stdDefineFile = null)
+
+    // starting out with empty path list...shouldn't really be needed, but can add if needed
+    // prepend main dir to asmfile I guess
+    public static bool Patch(string asmfile)
+    {
+        // not sure if I need to prepend main dir or not -- calls to this will/should always be relative to it anyway
+        bool status = Asar.patch(Program.MainDirectory + asmfile, ref romData, null, true, defines);
+
+        foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
+        {
+            string text = error.Fullerrdata;
+
+            // TODO: is this needed/helpful? (don't think so)
+            //            if (!String.IsNullOrEmpty(error.Filename))
+            //                error = error.Replace(error.Filename, asmfile);
+
+            MessageWriter.Write(true, $"  {text}");
+        }
+
+        return status;
+    }
+
+
+    public static bool ProcessPrints(string filename, out int startAddr, out int endAddr, bool allowProts)
+    {
+        bool startl = false;
+        bool endl = false;
+        startAddr = 0;
+        endAddr = 0;
+
+        foreach (string print in Asar.getprints())
+        {
+            string trimmed = print.Trim();        // Not sure if asar prints include newlines, but the Trim() will get rid of them if so
+            string command = trimmed;
+            int? value = null;
+
+            int space = print.IndexOf(' ');
+            if (space > 0)
             {
-                if (!this.canOperate) throw new ArgumentNullException();
-                byte[] output = new byte[length];
-                Array.Copy(romData, position, output, 0, length);
-                return output;
+                command = print.Substring(0, space);
+                try
+                {
+                    value = Convert.ToInt32(print.Substring(space + 1), 16);
+                }
+                catch { }
             }
 
-            catch
+            if (!startl && command != "_startl")
             {
-                return null;
+                MessageWriter.Write(true, $"  {filename}: error: unexpected print before _startl command.");
+                return false;
+            }
+
+            if (endl)
+            {
+                MessageWriter.Write(true, $"  {filename}: error: unexpected print after _endl command.");
+                return false;
+            }
+
+            switch (command)
+            {
+                case "_startl":
+                    if (value == null)
+                    {
+                        MessageWriter.Write(true, $"  {filename}: error: invalid value in _startl command.");
+                        return false;
+                    }
+                    startl = true;
+                    startAddr = value.Value;
+                    break;
+
+                case "_endl":
+                    if (value == null)
+                    {
+                        MessageWriter.Write(true, $"  {filename}: error: invalid value in _endl command.");
+                        return false;
+                    }
+                    endl = true;
+                    endAddr = value.Value;
+                    break;
+
+                case "_prot":
+                    if (!allowProts)
+                    {
+                        MessageWriter.Write(true, $"  Invalid use of _prot command.  This is most likely from using %prot_file() or %prot_source() in the global code or status bar files, which is not allowed.");
+                        return false;
+                    }
+                    if (value == null)
+                    {
+                        MessageWriter.Write(true, $"  {filename}: error: invalid value in _prot command.");
+                        return false;
+                    }
+                    Program.ProtPointers.Add(value.Value);
+                    break;
+
+                default:
+                    MessageWriter.Write(true, print);
+                    break;
             }
         }
+
+        if (!endl)
+        {
+            MessageWriter.Write(true, $"  {filename}: error: missing _endl command.");
+            return false;
+        }
+
+        if (startAddr == endAddr)
+        {
+            MessageWriter.Write(true, $"  {filename}: error: empty assembled file.");
+            return false;
+        }
+
+        return true;
     }
 }

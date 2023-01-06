@@ -1,57 +1,152 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UberASMTool.Model;
 
-namespace UberASMTool
+namespace UberASMTool;
+
+class UberConfigProcessor
 {
-    class UberConfigProcessor
+    private Logger logger = Logger.GetLogger();
+
+    public string OverrideROM { get; set; }
+
+    private string listFile;
+
+    private readonly List<Code> codeList = new List<Code>();
+    private bool verbose = false;
+    private string romPath = null;
+    private string globalFile = null;
+    private string statusBarFile = null;
+    private string macroLibraryFile = null;
+    private readonly List<int>[][] list = new List<int>[3][] { new List<int>[512], new List<int>[7], new List<int>[256] };
+    private readonly List<int>[] globalList = new List<int>[3];
+    private int freeRAM = 0;
+
+    private IEnumerable<ConfigStatement> statements = null;
+
+    public string GetLogs()
     {
-        private Logger logger = Logger.GetLogger();
+        return logger.GetOutput();
+    }
 
-        public string OverrideROM { get; set; }
-
-        private string[] listFile;
-
-        private readonly List<Code> codeList = new List<Code>();
-        private bool verbose = false;
-        private string romPath = null;
-        private string globalFile = null;
-        private string statusBarFile = null;
-        private string macroLibraryFile = null;
-        private readonly List<int>[][] list = new List<int>[3][] { new List<int>[512], new List<int>[7], new List<int>[256] };
-        private readonly List<int>[] globalList = new List<int>[3];
-        private int freeRAM = 0;
-        private int freeBWRAM = 0;
-
-        public string GetLogs()
+    public UberConfig Build()
+    {
+        return new UberConfig()
         {
-            return logger.GetOutput();
-        }
+            VerboseMode = verbose,
+            ROMPath = OverrideROM ?? romPath,
+            GlobalFile = globalFile,
+            StatusBarFile = statusBarFile,
+            MacroLibraryFile = macroLibraryFile,
+            FileASMList = list.Select(c => c.Select(d => d?.ToArray()).ToArray()).ToArray(),
+            FreeRAM = freeRAM,
+            CodeList = codeList.ToArray(),
+        };
+    }
 
-        public UberConfig Build()
+    public void LoadListFile(string path)
+    {
+        listFile = File.ReadAllText(path);
+        // Alternatively, File.ReadAllLines(path);
+        // then strip comments,
+        // then .Join("\n");
+    }
+
+    public bool ParseList()
+    {
+        statements = ListParser.ParseList(listFile);
+        return (statements != null);
+    }
+
+    public bool ProcessList()
+    {
+        var resourceMode = ResourceMode.None;
+        bool valid = true;
+
+        foreach (ConfigStatement statement in statements)
         {
-            return new UberConfig()
+            switch (statement)
             {
-                VerboseMode = verbose,
-                ROMPath = OverrideROM ?? romPath,
-                GlobalFile = globalFile,
-                StatusBarFile = statusBarFile,
-                MacroLibraryFile = macroLibraryFile,
-                FileASMList = list.Select(c => c.Select(d => d?.ToArray()).ToArray()).ToArray(),
-                GlobalASMList = globalList.Select(c => c?.ToArray()).ToArray(),
-                FreeRAM = freeRAM,
-                FreeBWRAM = freeBWRAM,
-                CodeList = codeList.ToArray(),
-            };
+                case VerboseStatement s:
+                    verbose = s.IsOn;
+                    break;
+
+                case FileStatement s when s.Type == FileType.Global:
+                    if (globalFile != null)
+                    {
+                        // error, file already given
+                        valid = false;
+                    }
+                    else
+                        globalFile = s.Filename;
+                    break;
+                    // these should probably all be one...file names stored in an array indexed by the filetype enum
+
+                 // etc
+
+                case FreeramStatement s:
+                    if (freeRAM != 0)
+                    {
+                        // error: already defined
+                        valid = false;
+                    }
+                    else if ((freeRAM >= 0x7E0000 && freeRAM <= 0x7FFFFF) || (freeRAM >= 0x400000 && freeRAM <= 0x41FFFF))
+                        freeRAM = s.Addr;
+                    else
+                    {
+                        // error: invalid ram address -- maybe allow low ram mirror
+                        valid = false;
+                    }
+                    break;
+
+                case ModeStatement s:
+                    resourceMode = s.Mode;
+                    break;
+
+                case ResourceStatement s:
+                    if (resourceMode == ResourceMode.None)
+                    {
+                        // error: no mode currently selected
+                        valid = false;
+                    }
+
+                    // if this resource num already had resources, error
+                    // if any files are duplicated, error (ehh)
+                    // otherwise
+                    // loop over files given, prepend appropriate path...if file doesn't exist, error
+                    // if file hasn't been used yet
+                    //    process file (read ;>dbr and ;>bytes) and add it to the resource pool, and keep the new index
+                    // else
+                    //    grab the index of this file
+                    // if ;>bytes doesn't match with given bytes, error
+
+                    break;
+
+                default:
+                    throw new Exception("Invalid config statement type.  This should never happen; please report this as a bug.");
+            }
         }
 
-        public void LoadListFile(string path)
+        // ditto for the other files...putting these in an array would simplify things
+        if (globalFile == null)
         {
-            listFile = File.ReadAllLines(path);
+            // error no global file given
+            valid = false;
         }
 
+        if (freeRAM == 0)
+        {
+            // error: no free ram addr specified
+            valid = false;
+        }
+
+        return valid;
+    }
+
+
+// ---------------------------------------
         public bool ParseList()
         {
             // 0 = level, 1 = ow, 2 = gamemode
@@ -130,28 +225,20 @@ namespace UberASMTool
                         continue;
 
                     case "freeram:":
-                        if (!ParseHexDefineDeclaration(ref freeRAM,
-                            "Free RAM address", valueHex, i)) return false;
+                        if (!ParseHexDefineDeclaration(ref freeRAM, "Free RAM address", valueHex, i)) return false;
                         continue;
                 }
 
                 int hexValue;
 
-                if (split[0] == "*")
+                try
                 {
-                    hexValue = -1;
+                    hexValue = Convert.ToUInt16(split[0], 16);
                 }
-                else
+                catch
                 {
-                    try
-                    {
-                        hexValue = Convert.ToUInt16(split[0], 16);
-                    }
-                    catch
-                    {
-                        logger.Error("invalid hex number.", i);
-                        return false;
-                    }
+                    logger.Error("invalid hex number.", i);
+                    return false;
                 }
 
                 switch (mode)
@@ -271,27 +358,13 @@ namespace UberASMTool
         {
             List<int> currentList;
 
-            if (level == -1)
+            if (list[type][level] == null)
             {
-                if (globalList[type] == null)
-                {
-                    currentList = globalList[type] = new List<int>();
-                }
-                else
-                {
-                    currentList = globalList[type];
-                }
+                currentList = list[type][level] = new List<int>();
             }
             else
             {
-                if (list[type][level] == null)
-                {
-                    currentList = list[type][level] = new List<int>();
-                }
-                else
-                {
-                    currentList = list[type][level];
-                }
+                currentList = list[type][level];
             }
 
             // TO DO: use hashes or anything better than path matching.
@@ -307,4 +380,3 @@ namespace UberASMTool
             currentList.Add(codeIdentifier);
         }
     }
-}
