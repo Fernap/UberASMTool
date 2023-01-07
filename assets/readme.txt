@@ -4,7 +4,7 @@
 | |  | | '_ \ / _ \ '__/ /\ \  \___ \| |\/| |    | |/ _ \ / _ \| |
 | |__| | |_) |  __/ | / ____ \ ____) | |  | |    | | (_) | (_) | |
  \____/|_.__/ \___|_|/_/    \_\_____/|_|  |_|    |_|\___/ \___/|_|
-         VERSION 1.5                BY VITOR VILELA
+         Version 2.0?                By Vitor Vilela
 
 Thank you for downloading my tool. I hope it helps you though your
 SMW hacking journey.
@@ -37,54 +37,97 @@ Features:
 * Specific features not present in original uberASM patch.
 
 ---------------------------------------------------------------------
--                         Version History                           -
+-                         Quick Start                               -
 ---------------------------------------------------------------------
 
-Version 1.5:
- - Fixed an in-game crash when using different NMI code combinations
- - Refactored some core parts of the program, making it easier to
-add improvements.
- - Improved the way how the LM restore point information works in a
-way that UberASM Tool will no longer concat its program information
-more than once.
- - Fixed incorrect extra byte 4 define used for PIXI sprites.
- - Added BW-RAM definition which is used on SA-1 ROMs only.
- - Fixed an application crash when accidentally including an empty
-file.
+1. Copy the contents of the UberASM Tool .zip file to a dedicated folder somewhere within your project.  Right now, best practice is to keep a separate copy of UberASM Tool for each project that you're working on (although there are plans to add flexibility here in a future version).
 
-Version 1.4:
-- Updated Asar to 1.71.
-- Fixed newer Asar printing weird path-related warnings.
-- Fixed a crash when stdin is either redirected or set to empty.
-- Fixed a crash when an .asm file prints either an empty or white-space
-only string.
-- Moved working .asm files to the dedicated ./asm/work instead of 
-./asm/.
+2. Place the .asm files for whatever UberASM resources you're using into the level/, gamemode/, or overworld/ folders as appropriate (most resources will be for levels, and resources may have additional instructions as well, so be sure to check for them).
 
-Version 1.3:
-- (randomdude999) Now uses Asar 1.61.
+3. Edit the list.txt file in the UberASM Tool folder and change the "rom:" command to point to the location of your ROM file.  It can be given either relative to the UberASM Tool executable (like "../myrom.smc") or as an absolute path.
 
-Version 1.2:
-- Added sprite defines with SA-1 support.
-- Fixed a crash when using both Level NMI and Overworld NMI.
-- Fixed some unintended behavior when enabling only Overworld NMI.
-- (RPG Hacker) Now uses Asar 1.50.
+4. Add the resources you want to use to the list.txt file.  For example, to use a resource named LRonoff.asm in the level/ folder for level 105, you'd add the line "105 LRonoff.asm" under the "level:" section of list.txt.  See below for more detail on the format of the list.txt file.
 
-Version 1.1:
- - Added global_load support.
- - Added more error checks for avoiding free space leaking when user
-wrongly uses pullpc/pushpc.
- - Fixed program crashing when running on a Dropbox folder.
- - Fixed minor display/print changes when running program.
- - Fixed minor grammar errors.
+5. Run UberASMTool.exe (either double click on the icon, or run it from the command line).  See below for command line options and more.
 
-Version 1.0:
- - First Public Release
+---------------------------------------------------------------------
+-                       Running UberASM Tool                        -
+---------------------------------------------------------------------
+
+UberASM Tool has the command line syntax:
+
+> UberASMTool [<list file> [<ROM file>]]
+
+If no <list file> is given, UberASM Tool will use the file "list.txt".  If no <ROM file> is given, UberASM Tool will use the ROM file given by the "rom:" command in the list file.  For example:
+
+     rom: MyHack.smc         ; ROM file to use.
+
+All files may be given either as absolute paths or as paths relative to the UberASM Tool executable file.  Alternatively, you can simply double click the executable and it will run as if no command line arguments were given.
+
+---------------------------------------------------------------------
+-                         The list file                             -
+---------------------------------------------------------------------
+
+The list file (list.txt by default) contains configuration information for UberASM Tool, including resources to use and some other stuff (FIX).  For commands that take file names, you can either give absolute paths, or you can give relative paths, in which case UberASM Tool will look relative the directory of the UberASM Tool executable.
+
+The following commands are available:
+
+ - verbose: <on/off>
+
+   If turned "on", extra information will be displayed as UberASM Tool runs, such as resource/library insert location and overall progress; this can be useful for debugging.  This command is optional, and the default is "off".
+
+ - rom: <ROM file>
+
+   This specifies the ROM file that UberASM Tool will use.  A ROM file may also be given on the command line, which will override the list file command (and the command may be omitted altogether in this case).
+
+ - global: <asm path>
+ - statusbar: <asm path>
+ - macrolib: <asm path>
+
+   These specify the .asm files for the global code file, the statusbar code file, and the macro library file.  These are all required, but there are defaults in place initially.  It's unlikely that you'll ever change these, but you can if you need to.  See below for more information about how these are used.
+
+ - freeram: <RAM address>
+
+   Specifies 2 bytes of free RAM used to keep track of the previous game mode.  The Usually you don't need to worry about this RAM address; the default value should work normally.  More may be required in the future, but previous versions required 38 (68 on SA-1) bytes, rather than the current amount.
+
+
+ - "level:"
+
+   This defines that we're now inserting LevelASM code. So any number below this label will be considerated as LevelASM code. Example:
+
+level:
+105 yoshi_island_1.asm
+106 yoshi_island_2.asm
+
+The input is hexadecimal and valid range is 000-1FF. All files must
+be on level folder. You can use it subfolders if you want, for example:
+
+level:
+105 world 1/level 1.asm
+115 world 3/castle.asm
+
+You can also use the same .asm file for multiple levels, allowing you
+save more space.
+
+ - "overworld:"
+   This defines that we're now inserting OW code. It has the same
+properties as "level:" label, except it applies to OW ASM code, uses
+overworld subfolder and valid numbers are: 0 = Main map; 1 = Yoshi's
+Island; 2 = Vanilla Dome; 3 = Forest of Illusion; 4 = Valley of
+Bowser; 5 = Special World; and 6 = Star World.
+
+ - "gamemode:"
+   This defines that we're not inserting Game mode code. It has the
+same properties as "level:" label, however it uses gamemode subfolder
+and valid range is 00-FF.
+
+";" means comment. They won't be processed by UberASM tool. Useful
+for putting comments, notes, etc.
+
 
 ---------------------------------------------------------------------
 -                         Getting Started                           -
 ---------------------------------------------------------------------
-
 Since UberASM Tool relies on Asar and pretty much uses same hijacks,
 you can safely apply it on your ROM even if you used uberASM or
 levelASM patch previously. Be sure to make a backup of your ROM
@@ -156,101 +199,6 @@ main:
 
 Of course at least one label (init, main or nmi) is required to
 work.
----------------------------------------------------------------------
--                       Running UberASM Tool                        -
----------------------------------------------------------------------
-
-To run UberASM Tool, change the file name located after "rom:" label,
-which is near end of the list. For example:
-
-rom:		Your SMW hack.smc		; ROM file to use.
-
-And after that double click UberASMTool program. The program will
-automatically look for "list.txt" and will apply everything you told
-to the ROM file you specified inside "list.txt".
-
-Alternatively, you can run UberASM Tool from command line with the
-following syntax:
-
-UberASMTool [list file]
-or
-UberASMTool [list file] [ROM file]
-
-
----------------------------------------------------------------------
--                           The List File                           -
----------------------------------------------------------------------
-
-UberASM Tool's list file is pretty different from the other tools you
-usually use. In that list you can set your level code, global code,
-overworld code, game mode code, free RAM addresses and even your ROM
-file!
-
-In a list file you can have the following commands:
- - verbose: <on/off>
-   The verbose command basically tells how the program will output
-the information on the console. If "on" is used, the program will
-put much details like insert size, pointers, progress, statistics,
-etc. If "off" is used, the program will only report anything special
-if an error occured. Default is off.
-
- - global: <asm path>
-   This defines the path for the global code .asm file location.
-Normally you don't have to change this since it's already defined in
-the base list file.
-
- - statusbar: <asm path>
-   This defines the path for the status bar .asm file location.
-Pretty much same as global code.
-
- - macrolib: <asm path>
-   This defines the path for the macro/define library .asm file
-location.
-
- - freeram: <RAM address>
-   Specifies 2 bytes of free RAM used to keep track of the previous
-game mode.  Usually you don't need to worry about this RAM address;
-the default value should work normally.  More may be required in the
-future, but previous versions required 38 (68 on SA-1) bytes, rather
-than the current amount.
-
- - rom: <ROM path>
-   This defines what ROM file will be used, relative to the .exe file
-location. If you don't specify a ROM file here, then you must run
-UberASM Tool though command line and specify one manually.
-
- - "level:"
-   This defines that we're now inserting LevelASM code. So any number
-below this label will be considerated as LevelASM code. Example:
-
-level:
-105 yoshi_island_1.asm
-106 yoshi_island_2.asm
-
-The input is hexadecimal and valid range is 000-1FF. All files must
-be on level folder. You can use it subfolders if you want, for example:
-
-level:
-105 world 1/level 1.asm
-115 world 3/castle.asm
-
-You can also use the same .asm file for multiple levels, allowing you
-save more space.
-
- - "overworld:"
-   This defines that we're now inserting OW code. It has the same
-properties as "level:" label, except it applies to OW ASM code, uses
-overworld subfolder and valid numbers are: 0 = Main map; 1 = Yoshi's
-Island; 2 = Vanilla Dome; 3 = Forest of Illusion; 4 = Valley of
-Bowser; 5 = Special World; and 6 = Star World.
-
- - "gamemode:"
-   This defines that we're not inserting Game mode code. It has the
-same properties as "level:" label, however it uses gamemode subfolder
-and valid range is 00-FF.
-
-";" means comment. They won't be processed by UberASM tool. Useful
-for putting comments, notes, etc.
 
 ---------------------------------------------------------------------
 -                        Multiple Bank Support                      -

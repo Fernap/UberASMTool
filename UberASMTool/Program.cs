@@ -1,5 +1,5 @@
 // WARNING!
-// I need to make updtaes to .asm files in the folder where VS sticks the executable, not where it's normally stored...so make sure to sync this
+// Make sure to sync any changes in assets/asm to the folder that VS puts the executable for testing. (or vice versa)
 
 // PROBLEM!!!!!!!!!!!!!!!!!!!
 // macros can't be nested, so I can't just incsrc resource_template and then call a macro it defines, because what it incsrc's could have macros
@@ -16,6 +16,8 @@
 // Asar.getlabelval() seems to cause an exception for a nonexistent label 
 // make the naming of NMI labels consistent in the patches
 // optimize level/ow/gm call code for situations where none are being called
+// Put something in empty folders so they actually go to github, even just readmes
+// add a note to readme about legal library names (and how spaces/subdirs are treated), will resolve #15
 
 global using System;
 global using System.Collections.Generic;
