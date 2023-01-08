@@ -34,8 +34,8 @@ public static class LibraryHandler
 
         foreach (string file in files)
         {
-            string relPath = Path.GetRelativePath(libPath, file);
-            string prefix = Path.ChangeExtension(relPath, null).Replace(" ", "_").Replace("/", "_").Replace("\\", "_");
+            string relPath = Path.GetRelativePath(libPath, file).Replace("\\", "/");
+            string prefix = Path.ChangeExtension(relPath, null).Replace(" ", "_").Replace("/", "_");
             bool binary = Path.GetExtension(relPath).ToLower() != ".asm";
 
             MessageWriter.Write(false, $"Processing {(binary ? "binary " : "")}file \"{relPath}\":");
@@ -93,7 +93,7 @@ public static class LibraryHandler
     {
         if (labels.Any(x => x.Name == name))
         {
-            MessageWriter.Write(true, "Error: Duplicate label");
+            MessageWriter.Write(true, "Error: Duplicate library label.");
             return false;
         }
 

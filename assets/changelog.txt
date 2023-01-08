@@ -13,11 +13,11 @@ Version 2.0 (?):
     * The modification to overworld code causes a conflict with https://www.smwcentral.net/?p=section&a=details&id=19763, lx5's nsmb star coin patch, see readme for more info.
 * Removed "main:", "load:", and "nmi:" labels from the global code file ("init:" still remains)
     * This rendered the hijack at $00806F useless, which has now been removed...applying UAT will restore the original game code here
-    * load: code can be achieved with a file with the load: label running in overworld *
+    * load: code can be achieved with a file with the load: label running in level *
     * nmi: code can be done with a file with the nmi: label running in gamemode *
     * main: code can be done with a file running in gamemode *.  See the readme for more info (specifically note to use a combined init: and main: routine to make sure it runs on every frame instead of skipping the first, and note that the CLI : INC $13 happens before instead of after)
 * Added support for resources to have extra bytes (implements issue #10)
-* Resource files can now include the exact line ";>dbr off" to tell UAT not to set the DBR when calling labels in that resource.  It will otherwise always set the DBR, even for the nmi: label, contrary to previous versions.
+* Resource files can now include the exact line ";>dbr off" to tell UAT not to set the DBR when calling labels in that resource.  Otherwise, it will set the DBR when calling any resource labels, except for nmi: .  This was the default behavior of previous versions.
 
 Library stuff:
 * If a library file has a label with the same name as the file, UAT no longer exports that label without the filename prefix.  E.g., a library file math.asm with the label math: would previously have had that label exposed simply as "math:", rather than "math_math:" as suggested by the documentation.  This was undocumented behavior and no longer happens.

@@ -1,5 +1,5 @@
 macro CallGamemodeResources()
-    pha
+    phx                      ; this call macro expects the offset in X due to needing to use A for other stuff
 
     pha : pha                ; 2 dummy bytes so that the offset is at $06,S instead of $04
     %GamemodeAllJSLs()       ; macro defined below, added by UAT..just a bunch of JSLs
@@ -29,12 +29,12 @@ endmacro
 CallGamemode:
     phb
 
+    ldx #$02                 ; offset for main
     lda $0100|!addr
     cmp !previous_mode
     sta !previous_mode
-    lda #$00                 ; offset for init
-    bne +
-    lda #$02                 ; previous and current modes the same, so run main instead of init
+    beq +
+    ldx #$00                 ; previous and current modes not the same, so load offset for init instead
 +
     %CallGamemodeResources()
     plb
@@ -61,8 +61,7 @@ CallGamemode:
 
 .End:
     phb
-
-    lda #$08
+    ldx #$04                   ; offset for end
     %CallGamemodeResources()
     plb
 

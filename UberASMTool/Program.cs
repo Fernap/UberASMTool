@@ -1,11 +1,6 @@
 // WARNING!
 // Make sure to sync any changes in assets/asm to the folder that VS puts the executable for testing. (or vice versa)
 
-// PROBLEM!!!!!!!!!!!!!!!!!!!
-// macros can't be nested, so I can't just incsrc resource_template and then call a macro it defines, because what it incsrc's could have macros
-// (unless somehow it works if the macros are in the included file and not directly in the macro def...I doubt it, but check)
-// false alarm.....this works ok, but keep eyes open
-
 // TODO:
 // getting freespace leak warnings from asar for library files (probably resource too)...
 //    so I'm adding in a "cleaned" modifier to suppress it...go back and see if that's really necessary (resource_template.asm and library_template.asm)
@@ -18,6 +13,9 @@
 // optimize level/ow/gm call code for situations where none are being called
 // Put something in empty folders so they actually go to github, even just readmes
 // add a note to readme about legal library names (and how spaces/subdirs are treated), will resolve #15
+// rename ResourceType to UberEnvironment (or something)
+// note in readme that DBR does *not* need to be restored if set manually
+// don't set DBR for nmi, even if the resource doesn't have it turned off...this doesn't break compat...we just treat NMI as special
 
 global using System;
 global using System.Collections.Generic;
