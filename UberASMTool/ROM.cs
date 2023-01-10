@@ -1,7 +1,5 @@
 // TODO: be smarter about reading/writing to the actual ROM file
 
-using System;
-
 namespace UberASMTool;
 
 using AsarCLR;
@@ -12,19 +10,22 @@ using AsarCLR;
 //        public int Location;
 //    }
 
-public static class ROM
+public class ROM
 {
-    private static byte[] romData;        // contains the actual ROM data (without the header if there is one)
-    private static byte[] headerData;     // stays null if ROM is headerless
-    private static string romPath;
-    private static int romSize;
-    public static Dictionary<string, string> defines = new();
+    private byte[] romData;        // contains the actual ROM data (without the header if there is one)
+    private byte[] headerData;     // stays null if ROM is headerless
+    private string romPath;
+    private int romSize;
+    private Dictionary<string, string> defines = new();
 
     // Add a define -- not implementing a way to remove, and not checking for duplicate keys
     // don't really need anything fancier
-    public static void AddDefine(string define, string value) => defines[define] = value;
+    public void AddDefine(string define, string value)
+    {
+        defines[define] = value;
+    }
 
-    public static bool Init(string filename)
+    public bool Load(string filename)
     {
         byte[] fileData;
 
@@ -42,7 +43,7 @@ public static class ROM
         }
         catch (Exception e)
         {
-            MessageWriter.Write(true, $"Error reading ROM file \"{romPath}\": {e}");
+            MessageWriter.Write(true, $"Error reading ROM file \"{romPath}\": {e.Message}");
             return false;
         }
 
@@ -83,7 +84,7 @@ public static class ROM
     }
 
     // TODO: have this just write directly from romData and headerData instead of copying to a separate buffer
-    public static bool Save()
+    public bool Save()
     {
         byte[] final = new byte[romSize + ((headerData != null) ? 512 : 0)];
 
@@ -96,7 +97,7 @@ public static class ROM
         }
         catch (Exception e)
         {
-            MessageWriter.Write(true, $"Error saving ROM file: {e}");
+            MessageWriter.Write(true, $"Error saving ROM file: {e.Message}");
             MessageWriter.Write(true, $"Please double check the intergrity of your ROM.");
             return false;
         }
@@ -110,28 +111,19 @@ public static class ROM
     //            string stdIncludeFile = null, string stdDefineFile = null)
 
     // starting out with empty path list...shouldn't really be needed, but can add if needed
-    // prepend main dir to asmfile I guess
-    public static bool Patch(string asmfile)
+    // asmfile is relative to the main directory
+    public bool Patch(string asmfile)
     {
-        // not sure if I need to prepend main dir or not -- calls to this will/should always be relative to it anyway
         bool status = Asar.patch(Program.MainDirectory + asmfile, ref romData, null, true, defines);
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
-        {
-            string text = error.Fullerrdata;
-
-            // TODO: is this needed/helpful? (don't think so)
-            //            if (!String.IsNullOrEmpty(error.Filename))
-            //                error = error.Replace(error.Filename, asmfile);
-
-            MessageWriter.Write(true, $"  {text}");
-        }
+            MessageWriter.Write(true, $"  {error.Fullerrdata}");
 
         return status;
     }
 
 
-    public static bool ProcessPrints(string filename, out int startAddr, out int endAddr, bool allowProts)
+    public bool ProcessPrints(string filename, out int startAddr, out int endAddr, bool allowProts)
     {
         bool startl = false;
         bool endl = false;

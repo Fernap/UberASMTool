@@ -12,6 +12,7 @@
 //     unexpected character after filename (not ":" or ",") or after extra bytes
 
 using Pidgin;
+using System.Xml.Linq;
 using static Pidgin.Parser;
 using static Pidgin.Parser<char>;
 
@@ -120,11 +121,11 @@ public static class ListParser
     // will parse, but will think it's 105 with file "106 foo.asm"
     //    private static readonly Parser<char, IEnumerable<ResourceStatement.UberResource>> files_and_bytes =
     //      file_and_bytes.SeparatedAtLeastOnce(Try(comma.Between(skip_until_important)));
-    private static readonly Parser<char, ResourceCall> file_and_bytes =
+    private static readonly Parser<char, ResourceStatement.Call> file_and_bytes =
         from f in asm_file.OrFail("Invalid resource filename.").Before(skip_ws)
         from bs in Char(':').OptionalThen(skip_ws.Then(Try(extra_bytes).OrFail("Invalid extra byte.")), Return(Enumerable.Empty<int>()))
-        select new ResourceCall { File = f, Bytes = bs.ToList() };
-    private static readonly Parser<char,IEnumerable<ResourceCall>> files_and_bytes =
+        select new ResourceStatement.Call { Filename = f, Bytes = bs.ToList() };
+    private static readonly Parser<char,IEnumerable<ResourceStatement.Call>> files_and_bytes =
         file_and_bytes.Before(skip_ws).SeparatedAtLeastOnce(comma.Then(skip_until_important));
 
     // ----------------------------------------------------------------------
@@ -147,19 +148,22 @@ public static class ListParser
         cmd("verbose", onoff, "Invalid argument to \"verbose:\".  Must be \"on\" or \"off\".").
         Select(b => (ConfigStatement) new VerboseStatement { IsOn = b });
 
-    private static Parser<char, ConfigStatement> mode_statement(string mode, ResourceType n) =>
+    private static Parser<char, ConfigStatement> mode_statement(string mode, UberContextType n) =>
         cmd(mode, Return(Unit.Value), "").ThenReturn((ConfigStatement) new ModeStatement { Mode = n });
-    private static readonly Parser<char, ConfigStatement> level_statement = mode_statement("level", ResourceType.Level);
-    private static readonly Parser<char, ConfigStatement> overworld_statement = mode_statement("overworld", ResourceType.Overworld);
-    private static readonly Parser<char, ConfigStatement> gamemode_statement = mode_statement("gamemode", ResourceType.Gamemode);
+    private static readonly Parser<char, ConfigStatement> level_statement = mode_statement("level", UberContextType.Level);
+    private static readonly Parser<char, ConfigStatement> overworld_statement = mode_statement("overworld", UberContextType.Overworld);
+    private static readonly Parser<char, ConfigStatement> gamemode_statement = mode_statement("gamemode", UberContextType.Gamemode);
 
-    private static Parser<char, ConfigStatement> file_statement(string name, Parser<char, string> p, FileType type) =>
-        cmd(name, p, $"Invalid filename in \"{name}:\" command.").
-        Select(f => (ConfigStatement) new FileStatement { Filename = f, Type = type });
-    private static readonly Parser<char, ConfigStatement> global_statement = file_statement("global", asm_file, FileType.Global);
-    private static readonly Parser<char, ConfigStatement> statusbar_statement = file_statement("statusbar", asm_file, FileType.Statusbar);
-    private static readonly Parser<char, ConfigStatement> macrolib_statement = file_statement("macrolib", asm_file, FileType.Macrolib);
-    private static readonly Parser<char, ConfigStatement> rom_statement = file_statement("rom", rom_file, FileType.ROM);
+
+    private static Parser<char, ConfigStatement> file_statement(string name, FileStatement statement) =>
+        cmd(name, asm_file, $"Invalid filename in \"{name}:\" command.").
+        Select(f => { statement.Filename = f; return (ConfigStatement) statement; } );
+    private static readonly Parser<char, ConfigStatement> global_statement = file_statement("global", new GlobalFileStatement());
+    private static readonly Parser<char, ConfigStatement> statusbar_statement = file_statement("statusbar", new StatusbarFileStatement());
+    private static readonly Parser<char, ConfigStatement> macrolib_statement = file_statement("macrolib", new MacrolibFileStatement());
+    private static readonly Parser<char, ConfigStatement> rom_statement =
+        cmd("rom", rom_file, "Invalid filename in \"rom:\" command.").
+        Select(f => (ConfigStatement) new ROMStatement { Filename = f } );
 
     private static readonly Parser<char, ConfigStatement> freeram_statement =
         cmd("freeram", snes_address, "Invalid SNES address in \"freeram:\" command.").Select(x => (ConfigStatement) new FreeramStatement { Addr = x });

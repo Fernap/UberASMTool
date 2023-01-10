@@ -14,7 +14,7 @@ public static class LibraryHandler
 {
     private static List<Asarlabel> labels = new ();     // all exposed labels (with prefixes)
 
-    public static bool BuildLibrary()
+    public static bool BuildLibrary(ROM rom)
     {
         MessageWriter.Write(false, "Building external library..." + Environment.NewLine);
 
@@ -45,9 +45,9 @@ public static class LibraryHandler
 
             if (!Program.TryWriteFile("asm/work/library.asm", output))
                 return false;
-            if (!ROM.Patch("asm/work/library.asm"))
+            if (!rom.Patch("asm/work/library.asm"))
                 return false;
-            if (!ROM.ProcessPrints(file, out int start, out int end, true))
+            if (!rom.ProcessPrints(file, out int start, out int end, true))
                 return false;
 
             int insertSize = end - start + 8;
