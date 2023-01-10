@@ -13,8 +13,11 @@ public class ResourceCall
 public class ContextMember
 {
     private List<ResourceCall> calls { get; set; } = new();
-    public bool HasNMI { get; private set; } = false;                        // need to figure out when this gets set
     public bool Empty => !calls.Any();
+
+    // could memoize this since once it becomes true, it never changes
+    // but this is more future-proof in case that ever changes
+    public bool HasNMI => calls.Any(x => x.ToCall.HasNMI);
 
     // throws an ArgumentException if this member already calls the given resource
     public void AddCall(Resource resource, List<int> bytes)
@@ -22,7 +25,6 @@ public class ContextMember
         if (CallsResource(resource))
             throw new ArgumentException("Context member already calls this resource.");
         calls.Add(new ResourceCall { ToCall = resource, Bytes = bytes } );
-        HasNMI = HasNMI || resource.HasNMI;
     }
 
     public bool CallsResource(Resource res) => calls.Any(x => x.ToCall == res);

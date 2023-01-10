@@ -4,12 +4,6 @@ namespace UberASMTool;
 
 using AsarCLR;
 
-//    public struct Asarlabel
-//    {
-//        public string Name;
-//        public int Location;
-//    }
-
 public class ROM
 {
     private byte[] romData;        // contains the actual ROM data (without the header if there is one)
@@ -22,6 +16,7 @@ public class ROM
     // don't really need anything fancier
     public void AddDefine(string define, string value)
     {
+        // Console.WriteLine($"!{define} = {value}");  // debug
         defines[define] = value;
     }
 

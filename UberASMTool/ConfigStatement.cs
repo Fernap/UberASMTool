@@ -128,9 +128,9 @@ public class ResourceStatement : ConfigStatement
 
     public bool Process(UberContext context, ResourceHandler handler, ROM rom)
     {
-        if (Number < 0 || Number > context.Size)
+        if (Number < -1 || Number >= context.Size)
         {
-            Error($"{context.Name} out of range (0 - {context.Size:X}).");
+            Error($"{context.Name} out of range (0 - {context.Size - 1:X}).");
             return false;
         }
 

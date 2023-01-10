@@ -18,6 +18,7 @@ public class ResourceHandler
             return true;
 
         resource = new Resource(file, resources.Count);
+        resources.Add(resource);
         return resource.Preprocess();
     }
 

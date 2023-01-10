@@ -19,7 +19,6 @@ public class UberContext
 {
     private ContextMember all;
     private ContextMember[] singles;
-    public bool HasNMI { get; private set; }
     public string Name { get; init; }
     public string Directory => Name.ToLower();
     public int Size { get; init; }
@@ -55,7 +54,7 @@ public class UberContext
     {
         all.GenerateExtraBytes(output, resource, $"{Name}All");
         for (int i = 0; i < singles.Length; i++)
-            singles[i].GenerateExtraBytes(output, resource, $"{Name}{i}");
+            singles[i].GenerateExtraBytes(output, resource, $"{Name}{i:X}");
     }
 
     // returns the value of the general NMI define for this context, NOT success/failure
@@ -99,7 +98,7 @@ public class UberContext
         {
             if (singles[i].Empty)
                 output.AppendLine($"{Name}{i:X}JSLs:");
-            if (singles[i].Empty)
+            if (!singles[i].HasNMI)
                 output.AppendLine($"{Name}{i:X}NMIJSLs:");
         }
     }
