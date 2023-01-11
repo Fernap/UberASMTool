@@ -8,14 +8,17 @@
 // even still, bar: in foo.asm would clash with /foo/bar.bin (binary files strip extensions)
 // fuck it, just check for duplicates and move on with life I guess
 
+using AsarCLR;
+
 namespace UberASMTool;
 
 public static class LibraryHandler
 {
-    private static List<Asarlabel> labels = new ();     // all exposed labels (with prefixes)
-
+    // patches all the library files into the rom and creates the label file all at once
     public static bool BuildLibrary(ROM rom)
     {
+        var labels = new Dictionary<string, int>();
+
         MessageWriter.Write(false, "Building external library..." + Environment.NewLine);
 
         string[] files;
@@ -56,58 +59,64 @@ public static class LibraryHandler
             MessageWriter.Write(false, $"  Insert size: {insertSize} (0x{insertSize:X}) bytes");
             // TODO: add to total insert size somewhere?
 
-            if (!binary)
-            {
-                int numlabels = 0;
-
-                foreach (Asarlabel label in Asar.getlabels())
-                {
-                    if (label.Name.Contains(":"))      // this skips macro-local and +/- labels
-                        continue;
-                    if (!AddLabel($"{prefix}_{label.Name}", label.Location))
-                        return false;
-                    numlabels++;
-                }
-
-                if (numlabels == 0)
-                {
-                    MessageWriter.Write(true, $"Error: No labels found in library file \"{file}\".");
-                    return false;
-                }
-                MessageWriter.Write(false, $"  Processed {numlabels} label(s).");
-            }
-
             // consider adding top-level label for source files too
             if (binary)
-               if (!AddLabel(prefix, start))
-                   return false;
+                if (!AddLabel(labels, prefix, start))
+                    return false;
+
+            if (!binary)
+                if (!GetLabels(labels, prefix, file))
+                    return false;
         }
 
         if (files.Length > 0)
             MessageWriter.Write(false, $"Processed {files.Length} library file(s).");
 
+        return GenerateLibraryLabelFile(labels);
+    }
+
+    // gets all the labels from a patched library .asm file and adds them to labels
+    private static bool GetLabels(Dictionary<string, int> labels, string prefix, string file)
+    {
+        int numlabels = 0;
+
+        foreach (Asarlabel label in Asar.getlabels())
+        {
+            if (label.Name.Contains(":"))      // s skips macro-local and +/- labels
+                continue;
+            if (!AddLabel(labels, $"{prefix}_{label.Name}", label.Location))
+                return false;
+            numlabels++;
+        }
+
+        if (numlabels == 0)
+        {
+            MessageWriter.Write(true, $"Error: No labels found in library file \"{file}\".");
+            return false;
+        }
+        MessageWriter.Write(false, $"  Processed {numlabels} label(s).");
         return true;
     }
 
-    private static bool AddLabel(string name, int addr)
+    private static bool AddLabel(Dictionary<string, int> labels, string name, int addr)
     {
-        if (labels.Any(x => x.Name == name))
+        if (labels.ContainsKey(name))
         {
-            MessageWriter.Write(true, "Error: Duplicate library label.");
+            MessageWriter.Write(true, $"Error: Duplicate library label \"{name}\".");
             return false;
         }
 
-        labels.Add(new Asarlabel { Name = name, Location = addr } );
+        labels[name] = addr;
         return true;
     }
 
-    public static bool GenerateLibraryLabelFile()
+    private static bool GenerateLibraryLabelFile(Dictionary<string, int> labels)
     {
         var output = new StringBuilder();
 
     // TODO: add subdir and spaces changing to undescores in doc
-        foreach (Asarlabel label in labels)
-            output.AppendLine($"{label.Name} = ${label.Location:X6}");
+        foreach (KeyValuePair<string, int> label in labels)
+            output.AppendLine($"{label.Key} = ${label.Value:X6}");
 
         return Program.TryWriteFile("asm/work/library_labels.asm", output.ToString());
     }
