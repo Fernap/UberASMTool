@@ -15,6 +15,7 @@
 // note in readme that DBR does *not* need to be restored if set manually
 // reiterate in readme that DBR still isn't set in NMI
 // clean up temp files after run (have a file util static class), and run it in Abort() and after success
+// rethink how %prot() macros work in terms of directories (currently it's relative to parent of macrolib file, with no way to specify absolute path)
 
 global using System;
 global using System.Collections.Generic;
@@ -29,7 +30,6 @@ namespace UberASMTool;
 public class Program
 {
     public static string MainDirectory { get; set; }      // this should probably go elsewhere
-    public static List<int> ProtPointers = new();                    // (not just prots, but resource/library freecode areas too) as should this
     public const int UberMajorVersion = 2;                           // put these somewhere better..take from solution settings?
     public const int UberMinorVersion = 0;
 
@@ -62,6 +62,7 @@ public class Program
 
         var config = new UberConfig();
         var resourceHandler = new ResourceHandler();
+        var lib = new LibraryHandler();
         var rom = new ROM();
         rom.AddDefine("UberMajorVersion", $"{UberMajorVersion}");
         rom.AddDefine("UberMinorVersion", $"{UberMinorVersion}");
@@ -78,17 +79,20 @@ public class Program
         if (!rom.Load(romfile)) { Abort(); return 1; }
 
         if (!rom.Patch("asm/base/clean.asm")) { Abort(); return 1; }
-        if (!LibraryHandler.BuildLibrary(rom)) { Abort(); return 1; }
+
+        if (!lib.BuildLibrary(rom)) { Abort(); return 1; }
+        if (!lib.GenerateLibraryLabelFile()) { Abort(); return 1; }
 
         if (!resourceHandler.BuildResources(config, rom)) { Abort(); return 1; }
         if (!resourceHandler.GenerateResourceLabelFile()) { Abort(); return 1; }
+
         config.AddNMIDefines(rom);
         if (!config.GenerateCallFile()) { Abort(); return 1; }
-        if (!GeneratePointerListFile()) { Abort(); return 1; }
-
+        if (!GeneratePointerListFile(lib, resourceHandler)) { Abort(); return 1; }
         if (!rom.Patch("asm/base/main.asm")) { Abort(); return 1; }
-        if (!rom.ProcessPrints("asm/base/main.asm", out int start, out int end, false)) { Abort(); return 1; }
+        if (!rom.ProcessPrints("asm/base/main.asm", out int start, out int end, null)) { Abort(); return 1; }
         // add to total insert size?
+
         if (!rom.Save()) { Abort(); return 1; }
 
         // sucess, print some stuff
@@ -119,11 +123,11 @@ public class Program
 // this doesn't really fit anywhere else
 // maybe in ROM, but ehh
 
-    private static bool GeneratePointerListFile()
+    private static bool GeneratePointerListFile(LibraryHandler lib, ResourceHandler res)
     {
         var output = new StringBuilder();
 
-        foreach (int addr in ProtPointers)
+        foreach (int addr in lib.Cleans.Concat(res.Cleans))
             output.AppendLine($"dl ${addr:X6}");
 
         return TryWriteFile("asm/work/pointer_list.asm", output.ToString());

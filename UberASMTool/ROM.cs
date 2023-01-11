@@ -118,7 +118,7 @@ public class ROM
     }
 
 
-    public bool ProcessPrints(string filename, out int startAddr, out int endAddr, bool allowProts)
+    public bool ProcessPrints(string filename, out int startAddr, out int endAddr, List<int> cleans)
     {
         bool startl = false;
         bool endl = false;
@@ -177,7 +177,7 @@ public class ROM
                     break;
 
                 case "_prot":
-                    if (!allowProts)
+                    if (cleans == null)
                     {
                         MessageWriter.Write(true, $"  Invalid use of _prot command.  This is most likely from using %prot_file() or %prot_source() in the global code or status bar files, which is not allowed.");
                         return false;
@@ -187,7 +187,7 @@ public class ROM
                         MessageWriter.Write(true, $"  {filename}: error: invalid value in _prot command.");
                         return false;
                     }
-                    Program.ProtPointers.Add(value.Value);
+                    cleans.Add(value.Value);
                     break;
 
                 default:

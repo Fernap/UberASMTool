@@ -12,13 +12,15 @@ using AsarCLR;
 
 namespace UberASMTool;
 
-public static class LibraryHandler
+public class LibraryHandler
 {
-    // patches all the library files into the rom and creates the label file all at once
-    public static bool BuildLibrary(ROM rom)
-    {
-        var labels = new Dictionary<string, int>();
+    private Dictionary<string, int> labels = new();
+    private List<int> cleans = new();
+    public List<int> Cleans => cleans;
 
+    // patches all the library files into the rom and creates the label file all at once
+    public bool BuildLibrary(ROM rom)
+    {
         MessageWriter.Write(false, "Building external library..." + Environment.NewLine);
 
         string[] files;
@@ -50,33 +52,32 @@ public static class LibraryHandler
                 return false;
             if (!rom.Patch("asm/work/library.asm"))
                 return false;
-            if (!rom.ProcessPrints(file, out int start, out int end, true))
+            if (!rom.ProcessPrints(file, out int start, out int end, cleans))
                 return false;
+            cleans.Add(start);
 
             int insertSize = end - start + 8;
-            Program.ProtPointers.Add(start);
             MessageWriter.Write(false, $"  Inserted at ${start:X6}");
             MessageWriter.Write(false, $"  Insert size: {insertSize} (0x{insertSize:X}) bytes");
             // TODO: add to total insert size somewhere?
 
             // consider adding top-level label for source files too
             if (binary)
-                if (!AddLabel(labels, prefix, start))
+                if (!AddLabel(prefix, start))
                     return false;
 
             if (!binary)
-                if (!GetLabels(labels, prefix, file))
+                if (!GetLabels(prefix, file))
                     return false;
         }
 
         if (files.Length > 0)
             MessageWriter.Write(false, $"Processed {files.Length} library file(s).");
-
-        return GenerateLibraryLabelFile(labels);
+        return true;
     }
 
     // gets all the labels from a patched library .asm file and adds them to labels
-    private static bool GetLabels(Dictionary<string, int> labels, string prefix, string file)
+    private bool GetLabels(string prefix, string file)
     {
         int numlabels = 0;
 
@@ -84,7 +85,7 @@ public static class LibraryHandler
         {
             if (label.Name.Contains(":"))      // s skips macro-local and +/- labels
                 continue;
-            if (!AddLabel(labels, $"{prefix}_{label.Name}", label.Location))
+            if (!AddLabel($"{prefix}_{label.Name}", label.Location))
                 return false;
             numlabels++;
         }
@@ -98,7 +99,7 @@ public static class LibraryHandler
         return true;
     }
 
-    private static bool AddLabel(Dictionary<string, int> labels, string name, int addr)
+    private bool AddLabel(string name, int addr)
     {
         if (labels.ContainsKey(name))
         {
@@ -110,7 +111,7 @@ public static class LibraryHandler
         return true;
     }
 
-    private static bool GenerateLibraryLabelFile(Dictionary<string, int> labels)
+    public bool GenerateLibraryLabelFile()
     {
         var output = new StringBuilder();
 

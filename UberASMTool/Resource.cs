@@ -57,15 +57,15 @@ public class Resource
     }
 
     // bad name maybe...this patches a resource into the rom and gathers label data and such
-    public bool Add(ROM rom)
+    public bool Add(ROM rom, List<int> cleans)
     {
         if (!GenerateResourceFile())
             return false;
         if (!rom.Patch("asm/work/resource.asm"))
             return false;
-        if (!rom.ProcessPrints(Filename, out int start, out int end, true))
+        if (!rom.ProcessPrints(Filename, out int start, out int end, cleans))
             return false;
-        Program.ProtPointers.Add(start);
+        cleans.Add(start);
 
         int insertSize = end - start + 8;
         MessageWriter.Write(false, $"  Inserted at ${start:X6}");

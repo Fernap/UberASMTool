@@ -3,6 +3,8 @@ namespace UberASMTool;
 public class ResourceHandler
 {
     private List<Resource> resources = new();
+    private List<int> cleans = new();
+    public List<int> Cleans => cleans;
 
     // add a failed flag for resources, so subsequent attempts to use it don't generate more errors
     // consider keeping this as a dictionary as it was before...not a huge difference
@@ -38,7 +40,7 @@ public class ResourceHandler
         {
             if (!config.GenerateExtraBytesFile(resource))
                 return false;
-            if (!resource.Add(rom))
+            if (!resource.Add(rom, cleans))
                 return false;
         }
 
