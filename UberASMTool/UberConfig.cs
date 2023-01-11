@@ -104,9 +104,12 @@ public class UberConfig
     {
         var output = new StringBuilder();
 
-        levelContext.GenerateExtraBytes(output, resource);
-        gamemodeContext.GenerateExtraBytes(output, resource);
-        overworldContext.GenerateExtraBytes(output, resource);
+        if (resource.NumBytes > 0)
+        {
+            levelContext.GenerateExtraBytes(output, resource);
+            gamemodeContext.GenerateExtraBytes(output, resource);
+            overworldContext.GenerateExtraBytes(output, resource);
+        }
 
         return Program.TryWriteFile("asm/work/extra_bytes.asm", output.ToString());
     }

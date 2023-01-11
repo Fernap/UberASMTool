@@ -14,6 +14,7 @@
 // add a note to readme about legal library names (and how spaces/subdirs are treated), will resolve #15
 // note in readme that DBR does *not* need to be restored if set manually
 // reiterate in readme that DBR still isn't set in NMI
+// clean up temp files after run (have a file util static class), and run it in Abort() and after success
 
 global using System;
 global using System.Collections.Generic;
@@ -78,7 +79,6 @@ public class Program
 
         if (!rom.Patch("asm/base/clean.asm")) { Abort(); return 1; }
         if (!LibraryHandler.BuildLibrary(rom)) { Abort(); return 1; }
-        if (!LibraryHandler.GenerateLibraryLabelFile()) { Abort(); return 1; }
 
         if (!resourceHandler.BuildResources(config, rom)) { Abort(); return 1; }
         if (!resourceHandler.GenerateResourceLabelFile()) { Abort(); return 1; }
@@ -98,7 +98,6 @@ public class Program
         return 0;
     }
 
-// TODO: clean up temp files
     private static void Abort()
     {
         Console.WriteLine("Some errors occured while running UberASM Tool.  Process aborted.");
