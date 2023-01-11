@@ -1026,7 +1026,7 @@ if !UberLevelNMINormal
         dw Level1FDNMIJSLs
         dw Level1FENMIJSLs
         dw Level1FFNMIJSLs
-    endif
+endif
 
 GamemodeResourcePointers:
     dw Gamemode0JSLs
@@ -1545,7 +1545,7 @@ if !UberGamemodeNMINormal
         dw GamemodeFDNMIJSLs
         dw GamemodeFENMIJSLs
         dw GamemodeFFNMIJSLs
-    endif
+endif
 
 
 OverworldResourcePointers:
@@ -1567,5 +1567,5 @@ if !UberLevelNMINormal
         dw Overworld4NMIJSLs
         dw Overworld5NMIJSLs
         dw Overworld6NMIJSLs
-    endif
+endif
 

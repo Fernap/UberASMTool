@@ -81,8 +81,8 @@ org $00A18F
     autoclean jml CallOverworldInit
     nop #2
 
-;org $009322
-;    autoclean JML CallGamemode       ; handles all of main, init, end
+org $009322
+    autoclean JML CallGamemode       ; handles all of main, init, end
 
 ; this handles both uberasm initializaiton, as well as calling the init: label for the global code file
 org $00804E
