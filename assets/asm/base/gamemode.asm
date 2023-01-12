@@ -1,9 +1,7 @@
 macro CallGamemodeResources()
     phx                      ; this call macro expects the offset in X due to needing to use A for other stuff
 
-    pha : pha                ; 2 dummy bytes so that the offset is at $06,S instead of $04
-    %GamemodeAllJSLs()       ; macro defined below, added by UAT..just a bunch of JSLs
-    pla : pla
+    %GamemodeAllJSLs()       ; added by UAT in asm/work/resource_calls.asm
 
     rep #$30
     lda !previous_mode
@@ -27,6 +25,7 @@ endmacro
 ;db "tool"
 
 CallGamemode:
+    pla : pla                ; kill the return address of the jsr that went here -- we're in a different bank and jumping directly back
     phb
 
     ldx #$02                 ; offset for main
@@ -48,7 +47,7 @@ CallGamemode:
     asl                        ; $00-$29, an "old" mode, so jump to that
     tax
     lda $9329,x : sta $00      ; game mode routine ptr, low byte
-    lda $9330,x : sta $01      ; game mode routine ptr, high byte
+    lda $932A,x : sta $01      ; game mode routine ptr, high byte
     if !bank8 != $00
         lda.b #!bank8 : sta $02
     else
@@ -67,4 +66,3 @@ CallGamemode:
 
 ; return from hijack
     jml $008075|!bank
-

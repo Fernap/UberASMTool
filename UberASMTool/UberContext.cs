@@ -117,10 +117,23 @@ public class UberContext
         }
     }
 
+    // Note: the resource entry point expects the label offset value at $06,S, so we need to push 2 dummy bytes
+    // onto the stack here because this is called inline, rather than being JSRed to
+    // PEA is 5 cycles vs. 6 for PHA : PHA
     private void GenerateAllMacro(StringBuilder output, bool nmi)
     {
         output.AppendLine($"macro {Name}All{(nmi ? "NMI" : "")}JSLs()");
-        all.GenerateCalls(output, nmi, Name, "All");
+        if (!all.Empty)
+        {
+            if (nmi)
+                all.GenerateCalls(output, nmi, Name, "All");
+            else
+            {
+                output.AppendLine("    pea $0000");
+                all.GenerateCalls(output, nmi, Name, "All");
+                output.AppendLine("    pla : pla");
+            }
+        }
         output.AppendLine("endmacro").AppendLine();
     }
 

@@ -2,10 +2,7 @@ macro CallLevelResources(offset)
     lda #<offset>
     pha
 
-    ; push 2 dummy bytes onto the stack to account for no intervening jsr
-    pha : pha
-    %LevelAllJSLs()
-    pla : pla
+    %LevelAllJSLs()                ; added by UAT in asm/work/resource_calls.asm
 
     rep #$30
     lda !level

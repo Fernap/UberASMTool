@@ -2,10 +2,7 @@ macro CallOverworldResources(offset)
     lda #<offset>
     pha
 
-    ; push 2 dummy bytes onto the stack to account for no intervening jsr
-    pha : pha
-    %OverworldAllJSLs()      ; macro defined below, added by UAT..just a bunch of JSLs
-    pla : pla
+    %OverworldAllJSLs()      ; added by UAT in asm/work/resource_calls.asm
 
     ldx $0DB3|!addr          ; 0 = mario, 1 = luigi
     lda $1F11|!addr,x        ; current OW map for player x
