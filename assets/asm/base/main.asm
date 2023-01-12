@@ -141,8 +141,8 @@ endmacro
 macro CallUberResourceWithBytes(num, nmi, type, which)
     !tmp := UberResource<num>_ExtraBytes_<type><which>
     if <nmi> && !sa1
-        lda.b #!tmp : sta $0000
-        lda.b #!tmp>>8 : sta $0001
+        lda.b #!tmp>>8 : pha
+        lda.b #!tmp : pha
     else
         lda.b #!tmp : sta $00
         lda.b #!tmp>>8 : sta $01
