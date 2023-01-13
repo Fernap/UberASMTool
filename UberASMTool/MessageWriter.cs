@@ -1,12 +1,14 @@
 namespace UberASMTool;
 
+public enum VerboseLevel { Quiet, Normal, Verbose, Debug }
+
 public static class MessageWriter
 {
-    public static bool VerboseMode { get; set; } = false;
+    public static VerboseLevel Verbosity { get; set; } = VerboseLevel.Normal;
 
-    public static void Write(bool important, string msg, params object[] args)
+    public static void Write(VerboseLevel level, string msg, params object[] args)
     {
-        if (VerboseMode || important)
+        if (Verbosity >= level)
             Console.WriteLine(msg, args);
     }
 }

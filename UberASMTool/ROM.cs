@@ -16,7 +16,7 @@ public class ROM
     // don't really need anything fancier
     public void AddDefine(string define, string value)
     {
-        // Console.WriteLine($"!{define} = {value}");  // debug
+        MessageWriter.Write(VerboseLevel.Debug, $"Define added: !{define} = {value}");
         defines[define] = value;
     }
 
@@ -28,7 +28,7 @@ public class ROM
 
         if (!File.Exists(romPath))
         {
-            MessageWriter.Write(true, $"Error: ROM file \"{romPath}\" not found.");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error: ROM file \"{romPath}\" not found.");
             return false;
         }
 
@@ -38,7 +38,7 @@ public class ROM
         }
         catch (Exception e)
         {
-            MessageWriter.Write(true, $"Error reading ROM file \"{romPath}\": {e.Message}");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error reading ROM file \"{romPath}\": {e.Message}");
             return false;
         }
 
@@ -56,12 +56,12 @@ public class ROM
 
         if (romSize > 8 * 1024 * 1024)
         {
-            MessageWriter.Write(true, "ROM file too large.");
+            MessageWriter.Write(VerboseLevel.Quiet, "ROM file too large.");
             return false;
         }
         if (romSize < 1024 * 1024)
         {
-            MessageWriter.Write(true, "ROM file too small.  It must be an SMW ROM expanded to at least 1 MB.");
+            MessageWriter.Write(VerboseLevel.Quiet, "ROM file too small.  It must be an SMW ROM expanded to at least 1 MB.");
             return false;
         }
 
@@ -71,7 +71,7 @@ public class ROM
         for (int i = 0; i < smw.Length; i++)
             if (romData[0x7FC0 + i] != smw[i])
             {
-                MessageWriter.Write(true, "ROM file does not appear to be a valid Super Mario World ROM.");
+                MessageWriter.Write(VerboseLevel.Quiet, "ROM file does not appear to be a valid Super Mario World ROM.");
                 return false;
             }
 
@@ -92,8 +92,8 @@ public class ROM
         }
         catch (Exception e)
         {
-            MessageWriter.Write(true, $"Error saving ROM file: {e.Message}");
-            MessageWriter.Write(true, $"Please double check the intergrity of your ROM.");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error saving ROM file: {e.Message}");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Please double check the intergrity of your ROM.");
             return false;
         }
 
@@ -112,7 +112,7 @@ public class ROM
         bool status = Asar.patch(Program.MainDirectory + asmfile, ref romData, null, true, defines);
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
-            MessageWriter.Write(true, $"  {error.Fullerrdata}");
+            MessageWriter.Write(VerboseLevel.Quiet, $"  {error.Fullerrdata}");
 
         return status;
     }
@@ -144,13 +144,13 @@ public class ROM
 
             if (!startl && command != "_startl")
             {
-                MessageWriter.Write(true, $"  {filename}: error: unexpected print before _startl command.");
+                MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: unexpected print before _startl command.");
                 return false;
             }
 
             if (endl)
             {
-                MessageWriter.Write(true, $"  {filename}: error: unexpected print after _endl command.");
+                MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: unexpected print after _endl command.");
                 return false;
             }
 
@@ -159,7 +159,7 @@ public class ROM
                 case "_startl":
                     if (value == null)
                     {
-                        MessageWriter.Write(true, $"  {filename}: error: invalid value in _startl command.");
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: invalid value in _startl command.");
                         return false;
                     }
                     startl = true;
@@ -169,7 +169,7 @@ public class ROM
                 case "_endl":
                     if (value == null)
                     {
-                        MessageWriter.Write(true, $"  {filename}: error: invalid value in _endl command.");
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: invalid value in _endl command.");
                         return false;
                     }
                     endl = true;
@@ -179,32 +179,32 @@ public class ROM
                 case "_prot":
                     if (cleans == null)
                     {
-                        MessageWriter.Write(true, $"  Invalid use of _prot command.  This is most likely from using %prot_file() or %prot_source() in the global code or status bar files, which is not allowed.");
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  Invalid use of _prot command.  This is most likely from using %prot_file() or %prot_source() in the global code or status bar files, which is not allowed.");
                         return false;
                     }
                     if (value == null)
                     {
-                        MessageWriter.Write(true, $"  {filename}: error: invalid value in _prot command.");
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: invalid value in _prot command.");
                         return false;
                     }
                     cleans.Add(value.Value);
                     break;
 
                 default:
-                    MessageWriter.Write(true, print);
+                    MessageWriter.Write(VerboseLevel.Normal, print);
                     break;
             }
         }
 
         if (!endl)
         {
-            MessageWriter.Write(true, $"  {filename}: error: missing _endl command.");
+            MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: missing _endl command.");
             return false;
         }
 
         if (startAddr == endAddr)
         {
-            MessageWriter.Write(true, $"  {filename}: error: empty assembled file.");
+            MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: empty assembled file.");
             return false;
         }
 

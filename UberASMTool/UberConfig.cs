@@ -25,7 +25,7 @@ public class UberConfig
             switch (statement)
             {
                 case VerboseStatement s:
-                    MessageWriter.VerboseMode = s.IsOn;
+                    MessageWriter.Verbosity = s.Verbosity;
                     break;
 
                 case ModeStatement s:
@@ -87,7 +87,7 @@ public class UberConfig
     private bool CheckCommandSpecified(bool val, string cmd)
     {
         if (!val)
-            MessageWriter.Write(true, $"Error: no \"{cmd}\" command found.");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error: no \"{cmd}\" command found.");
         return val;
     }
 

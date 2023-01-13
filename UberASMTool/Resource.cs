@@ -43,12 +43,12 @@ public class Resource
             }
             catch
             {
-                MessageWriter.Write(true, $"Invalid number in \">bytes\" command in \"{Filename}\".");
+                MessageWriter.Write(VerboseLevel.Quiet, $"Invalid number in \">bytes\" command in \"{Filename}\".");
                 return false;
             }
             if (bytes < 0 || bytes > 255)
             {
-                MessageWriter.Write(true, $"Invalid value in \">bytes\" command in \"{Filename}\" (must be 0 - 255).");
+                MessageWriter.Write(VerboseLevel.Quiet, $"Invalid value in \">bytes\" command in \"{Filename}\" (must be 0 - 255).");
                 return false;
             }
             NumBytes = bytes;
@@ -69,8 +69,8 @@ public class Resource
         cleans.Add(start);
 
         Size = end - start + 8;
-        MessageWriter.Write(false, $"  Inserted at ${start:X6}");
-        MessageWriter.Write(false, $"  Insert size: {Size} (0x{Size:X}) bytes");
+        MessageWriter.Write(VerboseLevel.Verbose, $"  Inserted at ${start:X6}");
+        MessageWriter.Write(VerboseLevel.Verbose, $"  Insert size: {Size} (0x{Size:X}) bytes");
 
         return ProcessLabels();
     }
@@ -85,7 +85,7 @@ public class Resource
         int index = Array.FindIndex(labels, x => x.Name == "Inner_ResourceEntry");
         if (index < 0)
         {
-            MessageWriter.Write(true, $"Error adding \"{Filename}\": ResourceEntry label not found.");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error adding \"{Filename}\": ResourceEntry label not found.");
             return false;
         }
         EntryAddress = labels[index].Location;

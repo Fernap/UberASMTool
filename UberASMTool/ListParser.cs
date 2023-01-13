@@ -112,8 +112,11 @@ public static class ListParser
         Or(hex_prefix.Optional().Then(digits(hex_digit, 3)).Select(s => System.Convert.ToInt32(s, 16)));
     private static readonly Parser<char, IEnumerable<int>> extra_bytes =
         signed_byte.SeparatedAndOptionallyTerminatedAtLeastOnce(skip_ws);
-    private static readonly Parser<char, bool> onoff =
-        Try(CIString("on").ThenReturn(true)).Or(CIString("off").ThenReturn(false));
+    private static readonly Parser<char, VerboseLevel> verbosity =
+        Try(CIString("on").ThenReturn(VerboseLevel.Verbose)).
+        Or(Try(CIString("off").ThenReturn(VerboseLevel.Normal))).
+        Or(Try(CIString("quiet").ThenReturn(VerboseLevel.Quiet))).
+        Or(Try(CIString("debug").ThenReturn(VerboseLevel.Debug)));
 
     // this allows a line break after resource num, but not an empty list, so e.g.
     // 105
@@ -145,8 +148,8 @@ public static class ListParser
 // filename() -> bad filename (or separate asm/rom file even)
 // change hex_number to snes_address and put it there
     private static readonly Parser<char, ConfigStatement> verbose_statement =
-        cmd("verbose", onoff, "Invalid argument to \"verbose:\".  Must be \"on\" or \"off\".").
-        Select(b => (ConfigStatement) new VerboseStatement { IsOn = b });
+        cmd("verbose", verbosity, "Invalid argument to \"verbose:\".  Must be \"on\", \"off\", \"quiet\", or \"debug\".").
+        Select(b => (ConfigStatement) new VerboseStatement { Verbosity = b });
 
     private static Parser<char, ConfigStatement> mode_statement(string mode, UberContextType n) =>
         cmd(mode, Return(Unit.Value), "").ThenReturn((ConfigStatement) new ModeStatement { Mode = n });
@@ -203,7 +206,7 @@ public static class ListParser
 
         if (!File.Exists(listFile))
         {
-            MessageWriter.Write(true, $"Cannot read list file \"{listFile}\"");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Cannot read list file \"{listFile}\"");
             return null;
         }
 
@@ -213,7 +216,7 @@ public static class ListParser
         }
         catch (Exception e)
         {
-            MessageWriter.Write(true, $"Cannot read list file \"{listFile}\": {e}");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Cannot read list file \"{listFile}\": {e}");
             return null;
         }
 
@@ -222,7 +225,7 @@ public static class ListParser
             return res.Value;
 
         // TODO: come up with better generic parse errors
-        MessageWriter.Write(true, res.Error.ToString());
+        MessageWriter.Write(VerboseLevel.Quiet, res.Error.ToString());
         return null;
     }
 

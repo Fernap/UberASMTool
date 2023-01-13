@@ -13,16 +13,11 @@
 // make the naming of NMI labels consistent in the patches
 // optimize level/ow/gm call code for situations where none are being called
 // Put something in empty folders so they actually go to github, even just readmes
-// add a note to readme about legal library names (and how spaces/subdirs are treated), will resolve #15
-// note in readme that DBR does *not* need to be restored if set manually
-// reiterate in readme that DBR still isn't set in NMI
 // clean up temp files after run (have a file util static class), and run it in Abort() and after success
 // rethink how %prot() macros work in terms of directories (currently it's relative to parent of macrolib file, with no way to specify absolute path)
-// add in verbose: debug or something in addition to regular verbose mode
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
-// add note to readme about running an old version of UAT on a rom with a newer version
 
 global using System;
 global using System.Collections.Generic;
@@ -47,25 +42,27 @@ public class Program
 
         if (!Asar.init())
         {
-            Console.WriteLine("Could not initialize or find asar.dll");
-            Console.WriteLine("Please redownload the program.");
+            MessageWriter.Write(VerboseLevel.Quiet, "Could not initialize or find asar.dll.  Please redownload the program.");
             Pause();
             return 1;
         }
 
+        // this should respect quiet mode when no args given if everything else is otherwise ok
+        // really not sure if this should print out usage when no args are given if everything is okay anyway
         if (args.Length == 0 || args.Length > 2)
+            PrintUsage();
+
+        if (args.Length > 2)
         {
-            Console.WriteLine("Usage: UberASMTool [<list file> [<ROM file>]]");
-            Console.WriteLine("If list file is not specified, UberASM Tool will try loading 'list.txt'.");
-            Console.WriteLine("If ROM file is not specified, UberASM Tool will search for the one in the list file.");
-            Console.WriteLine("Unless absolute paths are given, the directory relative to the UberASM Tool executable will be used.");
-            Console.WriteLine();
+            Pause();
+            return 1;
         }
 
-        if (args.Length > 2) { Pause(); return 1; }
         string listFile = (args.Length >= 1) ? args[0] : "list.txt";
 
-        MessageWriter.Write(true, "Processing list file...");
+        // want to print this as "normal" priority, but it should also respect quiet mode, which we don't know
+        // yet because it's in the list file.  Need a command line option to force it
+        MessageWriter.Write(VerboseLevel.Normal, "Processing list file...");
         IEnumerable<ConfigStatement> statements = ListParser.ParseList(listFile);
         if (statements == null) { Abort(); return 1; }
 
@@ -81,25 +78,24 @@ public class Program
         string romfile = (args.Length >= 2) ? args[2] : config.ROMFile;
         if (romfile == null)
         {
-            MessageWriter.Write(true, "No ROM file specified in list file or on command line.");
+            MessageWriter.Write(VerboseLevel.Quiet, "No ROM file specified in list file or on command line.");
             Abort();
             return 1;
         }
         if (!rom.Load(romfile)) { Abort(); return 1; }
 
-        MessageWriter.Write(true, "Cleaning previous runs...");
+        MessageWriter.Write(VerboseLevel.Normal, "Cleaning previous runs...");
         if (!rom.Patch("asm/base/clean.asm")) { Abort(); return 1; }
 
-        MessageWriter.Write(true, "Building library...");
+        MessageWriter.Write(VerboseLevel.Normal, "Building library...");
         if (!lib.BuildLibrary(rom)) { Abort(); return 1; }
         if (!lib.GenerateLibraryLabelFile()) { Abort(); return 1; }
 
-        MessageWriter.Write(true, "Building resources...");
+        MessageWriter.Write(VerboseLevel.Normal, "Building resources...");
         if (!resourceHandler.BuildResources(config, rom)) { Abort(); return 1; }
         if (!resourceHandler.GenerateResourceLabelFile()) { Abort(); return 1; }
 
-        MessageWriter.Write(true, "Building main patch" +
-            "...");
+        MessageWriter.Write(VerboseLevel.Normal, "Building main patch...");
         config.AddNMIDefines(rom);
         if (!config.GenerateCallFile()) { Abort(); return 1; }
         if (!GeneratePointerListFile(lib, resourceHandler)) { Abort(); return 1; }
@@ -109,13 +105,13 @@ public class Program
 
         if (!rom.Save()) { Abort(); return 1; }
 
-        MessageWriter.Write(false, $"Main patch insert size: {mainSize} bytes.");
-        MessageWriter.Write(false, $"Library insert size: {lib.Size} bytes.");
-        MessageWriter.Write(false, $"Resource insert size: {resourceHandler.Size} bytes.");
-        MessageWriter.Write(false, $"Total: {mainSize + lib.Size + resourceHandler.Size} bytes.");
+        MessageWriter.Write(VerboseLevel.Verbose, $"Main patch insert size: {mainSize} bytes.");
+        MessageWriter.Write(VerboseLevel.Verbose, $"Library insert size: {lib.Size} bytes.");
+        MessageWriter.Write(VerboseLevel.Verbose, $"Resource insert size: {resourceHandler.Size} bytes.");
+        MessageWriter.Write(VerboseLevel.Normal, $"Total insert size: {mainSize + lib.Size + resourceHandler.Size} bytes.");
 
-        MessageWriter.Write(true, "");
-        MessageWriter.Write(true, "All code inserted successfully.");
+        MessageWriter.Write(VerboseLevel.Normal, "");
+        MessageWriter.Write(VerboseLevel.Normal, "All code inserted successfully.");
 
         WriteRestoreComment(config.ROMFile, $"{UberMajorVersion}.{UberMinorVersion}");
 
@@ -125,8 +121,8 @@ public class Program
 
     private static void Abort()
     {
-        Console.WriteLine("Some errors occured while running UberASM Tool.  Process aborted.");
-        Console.WriteLine("Your ROM has not been modified.");
+        MessageWriter.Write(VerboseLevel.Quiet, "Some errors occured while running UberASM Tool.  Process aborted.");
+        MessageWriter.Write(VerboseLevel.Quiet, "Your ROM has not been modified.");
         Pause();
     }
 
@@ -141,8 +137,17 @@ public class Program
         catch {	}
     }
 
-// this doesn't really fit anywhere else
-// maybe in ROM, but ehh
+    public static void PrintUsage()
+    {
+        MessageWriter.Write(VerboseLevel.Quiet, "Usage: UberASMTool [<list file> [<ROM file>]]");
+        MessageWriter.Write(VerboseLevel.Quiet, "If list file is not specified, UberASM Tool will try loading 'list.txt'.");
+        MessageWriter.Write(VerboseLevel.Quiet, "If ROM file is not specified, UberASM Tool will search for the one in the list file.");
+        MessageWriter.Write(VerboseLevel.Quiet, "Unless absolute paths are given, the directory relative to the UberASM Tool executable will be used.");
+        MessageWriter.Write(VerboseLevel.Quiet, "");
+    }
+
+    // this doesn't really fit anywhere else
+    // maybe in ROM, but ehh
 
     private static bool GeneratePointerListFile(LibraryHandler lib, ResourceHandler res)
     {
@@ -168,7 +173,7 @@ public class Program
         }
         catch (Exception e)
         {
-            MessageWriter.Write(true, $"Warning: could not update contents of {romfile}.extmod: {e.Message}");
+            MessageWriter.Write(VerboseLevel.Normal, $"Warning: could not update contents of {romfile}.extmod: {e.Message}");
         }
     }
 
@@ -181,7 +186,7 @@ public class Program
         }
         catch (Exception e)
         {
-            MessageWriter.Write(true, $"Error writing file \"{file}\": {e}");
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error writing file \"{file}\": {e}");
             return false;
         }
         return true;

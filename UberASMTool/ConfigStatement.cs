@@ -6,13 +6,13 @@ public class ConfigStatement
 {
     public int Line { get; set; }
 
-    public void Error(string msg) => MessageWriter.Write(true, $"Error on line {Line}: {msg}");
+    public void Error(string msg) => MessageWriter.Write(VerboseLevel.Quiet, $"Error on line {Line}: {msg}");
 }
 
 // "verbose:"
 public class VerboseStatement : ConfigStatement
 {
-    public bool IsOn { get; init; }
+    public VerboseLevel Verbosity { get; init; }
 }
 
 // this should maybe go elsewhere, but leaving here for now:
