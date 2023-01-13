@@ -7,7 +7,6 @@
 // TODO:
 // getting freespace leak warnings from asar for library files (probably resource too)...
 //    so I'm adding in a "cleaned" modifier to suppress it...go back and see if that's really necessary (resource_template.asm and library_template.asm)
-// look at LM tool use reporting thingy
 // clean up/standardize error message formats
 // go through and make sure i'm printing the same info (more or less) that 1.x does
 // I may not need to bail out at the first sign of an error...look into how far I can push until that's really needed
@@ -23,6 +22,7 @@
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
+// add note to readme about running an old version of UAT on a rom with a newer version
 
 global using System;
 global using System.Collections.Generic;
@@ -117,6 +117,8 @@ public class Program
         MessageWriter.Write(true, "");
         MessageWriter.Write(true, "All code inserted successfully.");
 
+        WriteRestoreComment(config.ROMFile, $"{UberMajorVersion}.{UberMinorVersion}");
+
         // Pause();
         return 0;
     }
@@ -152,6 +154,24 @@ public class Program
         return TryWriteFile("asm/work/pointer_list.asm", output.ToString());
     }
 
+    private static void WriteRestoreComment(string romfile, string ver)
+    {
+        string extfile = Path.ChangeExtension(romfile, "extmod");
+        string addText = $"UberASM Tool v{ver} ";
+
+        try
+        {
+            string contents = File.Exists(extfile) ? File.ReadAllText(extfile) : "";
+            if (contents.EndsWith(addText))
+                return;
+            File.WriteAllText(extfile, contents + addText);
+        }
+        catch (Exception e)
+        {
+            MessageWriter.Write(true, $"Warning: could not update contents of {romfile}.extmod: {e.Message}");
+        }
+    }
+
 // this should probably go in a FileUtils helper class or something
     public static bool TryWriteFile(string file, string text)
     {
@@ -166,4 +186,5 @@ public class Program
         }
         return true;
     }
+
 }
