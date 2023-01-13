@@ -10,7 +10,8 @@ public class Resource
 
     public int EntryAddress { get; set; }   // ROM address of the ResourceEntry: label for this resource
     public bool HasNMI { get; private set; }       // true if this resource has an nmi: label, false if not
-    public int NMIAddress { get; set; }     
+    public int NMIAddress { get; set; }
+    public int Size { get; private set; }
 
     public List<Asarlabel> BytesLabels { get; set; } = new();  // ROM address of the ExtraBytes: sublabels for this resource
 
@@ -67,10 +68,9 @@ public class Resource
             return false;
         cleans.Add(start);
 
-        int insertSize = end - start + 8;
+        Size = end - start + 8;
         MessageWriter.Write(false, $"  Inserted at ${start:X6}");
-        MessageWriter.Write(false, $"  Insert size: {insertSize} (0x{insertSize:X}) bytes");
-        // TODO: something about total insert size
+        MessageWriter.Write(false, $"  Insert size: {Size} (0x{Size:X}) bytes");
 
         return ProcessLabels();
     }

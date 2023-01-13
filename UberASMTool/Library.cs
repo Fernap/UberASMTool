@@ -16,7 +16,10 @@ public class LibraryHandler
 {
     private Dictionary<string, int> labels = new();
     private List<int> cleans = new();
+
     public List<int> Cleans => cleans;
+    public int Size { get; private set; } = 0;
+
 
     // patches all the library files into the rom and creates the label file all at once
     public bool BuildLibrary(ROM rom)
@@ -59,7 +62,7 @@ public class LibraryHandler
             int insertSize = end - start + 8;
             MessageWriter.Write(false, $"  Inserted at ${start:X6}");
             MessageWriter.Write(false, $"  Insert size: {insertSize} (0x{insertSize:X}) bytes");
-            // TODO: add to total insert size somewhere?
+            Size += insertSize;
 
             // consider adding top-level label for source files too
             if (binary)

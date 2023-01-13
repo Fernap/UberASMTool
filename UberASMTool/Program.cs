@@ -1,6 +1,9 @@
 // WARNING!
 // Make sure to sync any changes in assets/asm to the folder that VS puts the executable for testing. (or vice versa)
 
+// IMPORTANT:
+// double check what happens in NMI on sa-1 during lag.  Should UAT skip calling resources during lag?
+
 // TODO:
 // getting freespace leak warnings from asar for library files (probably resource too)...
 //    so I'm adding in a "cleaned" modifier to suppress it...go back and see if that's really necessary (resource_template.asm and library_template.asm)
@@ -91,12 +94,17 @@ public class Program
         if (!GeneratePointerListFile(lib, resourceHandler)) { Abort(); return 1; }
         if (!rom.Patch("asm/base/main.asm")) { Abort(); return 1; }
         if (!rom.ProcessPrints("asm/base/main.asm", out int start, out int end, null)) { Abort(); return 1; }
-        // add to total insert size?
+        int mainSize = end - start + 8;
 
         if (!rom.Save()) { Abort(); return 1; }
 
-        // sucess, print some stuff
-        // 1.x shows main patch insert size & total insert size (main + other stuff)
+        MessageWriter.Write(false, $"Main patch insert size: {mainSize} bytes.");
+        MessageWriter.Write(false, $"Library insert size: {lib.Size} bytes.");
+        MessageWriter.Write(false, $"Resource insert size: {resourceHandler.Size} bytes.");
+        MessageWriter.Write(false, $"Total: {mainSize + lib.Size + resourceHandler.Size} bytes.");
+
+        MessageWriter.Write(true, "");
+        MessageWriter.Write(true, "All code inserted successfully.");
 
         // Pause();
         return 0;
