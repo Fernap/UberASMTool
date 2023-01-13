@@ -44,7 +44,7 @@ public class LibraryHandler
             string prefix = Path.ChangeExtension(relPath, null).Replace(" ", "_").Replace("/", "_");
             bool binary = Path.GetExtension(relPath).ToLower() != ".asm";
 
-            MessageWriter.Write(VerboseLevel.Verbose, $"Processing {(binary ? "binary " : "")}file \"{relPath}\":");
+            MessageWriter.Write(VerboseLevel.Verbose, $"  Processing {(binary ? "binary" : "asm")} file \"{relPath}\":");
 
             string output = "incsrc \"../base/library_template.asm\"" + Environment.NewLine +
                             $"%UberLibrary(\"{relPath}\", {(binary ? 1 : 0)})" + Environment.NewLine;
@@ -58,8 +58,9 @@ public class LibraryHandler
             cleans.Add(start);
 
             int insertSize = end - start + 8;
-            MessageWriter.Write(VerboseLevel.Verbose, $"  Inserted at ${start:X6}");
-            MessageWriter.Write(VerboseLevel.Verbose, $"  Insert size: {insertSize} (0x{insertSize:X}) bytes");
+            MessageWriter.Write(VerboseLevel.Verbose, $"    Inserted at ${start:X6}");
+            MessageWriter.Write(VerboseLevel.Verbose, $"    Insert size: {insertSize} (0x{insertSize:X}) bytes");
+            MessageWriter.Write(VerboseLevel.Verbose, "");
             Size += insertSize;
 
             // consider adding top-level label for source files too
@@ -73,7 +74,8 @@ public class LibraryHandler
         }
 
         if (files.Length > 0)
-            MessageWriter.Write(VerboseLevel.Verbose, $"Processed {files.Length} library file(s).");
+            MessageWriter.Write(VerboseLevel.Normal, $"  Processed {files.Length} library file(s).");
+
         return true;
     }
 

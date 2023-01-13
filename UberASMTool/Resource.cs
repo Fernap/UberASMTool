@@ -60,6 +60,7 @@ public class Resource
     // bad name maybe...this patches a resource into the rom and gathers label data and such
     public bool Add(ROM rom, List<int> cleans)
     {
+        MessageWriter.Write(VerboseLevel.Verbose, $"Adding resource \"{Filename}\"...");
         if (!GenerateResourceFile())
             return false;
         if (!rom.Patch("asm/work/resource.asm"))
@@ -71,6 +72,7 @@ public class Resource
         Size = end - start + 8;
         MessageWriter.Write(VerboseLevel.Verbose, $"  Inserted at ${start:X6}");
         MessageWriter.Write(VerboseLevel.Verbose, $"  Insert size: {Size} (0x{Size:X}) bytes");
+        MessageWriter.Write(VerboseLevel.Verbose, "");
 
         return ProcessLabels();
     }

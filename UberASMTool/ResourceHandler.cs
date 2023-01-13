@@ -47,6 +47,9 @@ public class ResourceHandler
             Size += resource.Size;
         }
 
+        if (resources.Count > 0)
+            MessageWriter.Write(VerboseLevel.Normal, $"  Processed {resources.Count} resource file(s).");
+
         // print something probably
         return true;
     }

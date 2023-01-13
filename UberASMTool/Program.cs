@@ -1,14 +1,7 @@
 // WARNING!
 // Make sure to sync any changes in assets/asm to the folder that VS puts the executable for testing. (or vice versa)
 
-// IMPORTANT:
-// double check what happens in NMI on sa-1 during lag.  Should UAT skip calling resources during lag?
-
 // TODO:
-// getting freespace leak warnings from asar for library files (probably resource too)...
-//    so I'm adding in a "cleaned" modifier to suppress it...go back and see if that's really necessary (resource_template.asm and library_template.asm)
-// clean up/standardize error message formats
-// go through and make sure i'm printing the same info (more or less) that 1.x does
 // I may not need to bail out at the first sign of an error...look into how far I can push until that's really needed
 // make the naming of NMI labels consistent in the patches
 // optimize level/ow/gm call code for situations where none are being called
@@ -18,6 +11,8 @@
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
+// acount for prot files in insert sizes
+// when adding temp file deletion, have a rom failure call this too
 
 global using System;
 global using System.Collections.Generic;
@@ -103,12 +98,12 @@ public class Program
         if (!rom.ProcessPrints("asm/base/main.asm", out int start, out int end, null)) { Abort(); return 1; }
         int mainSize = end - start + 8;
 
-        if (!rom.Save()) { Abort(); return 1; }
+        if (!rom.Save()) { Pause(); return 1; }
 
-        MessageWriter.Write(VerboseLevel.Verbose, $"Main patch insert size: {mainSize} bytes.");
-        MessageWriter.Write(VerboseLevel.Verbose, $"Library insert size: {lib.Size} bytes.");
-        MessageWriter.Write(VerboseLevel.Verbose, $"Resource insert size: {resourceHandler.Size} bytes.");
-        MessageWriter.Write(VerboseLevel.Normal, $"Total insert size: {mainSize + lib.Size + resourceHandler.Size} bytes.");
+        MessageWriter.Write(VerboseLevel.Verbose, $"  Main patch insert size: {mainSize} bytes.");
+        MessageWriter.Write(VerboseLevel.Verbose, $"  Library insert size: {lib.Size} bytes.");
+        MessageWriter.Write(VerboseLevel.Verbose, $"  Resource insert size: {resourceHandler.Size} bytes.");
+        MessageWriter.Write(VerboseLevel.Normal,  $"  Total insert size: {mainSize + lib.Size + resourceHandler.Size} bytes.");
 
         MessageWriter.Write(VerboseLevel.Normal, "");
         MessageWriter.Write(VerboseLevel.Normal, "All code inserted successfully.");
@@ -173,7 +168,7 @@ public class Program
         }
         catch (Exception e)
         {
-            MessageWriter.Write(VerboseLevel.Normal, $"Warning: could not update contents of {romfile}.extmod: {e.Message}");
+            MessageWriter.Write(VerboseLevel.Normal, $"Warning: could not update contents of extmod file: {e.Message}");
         }
     }
 
