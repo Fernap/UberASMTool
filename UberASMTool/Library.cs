@@ -24,8 +24,6 @@ public class LibraryHandler
     // patches all the library files into the rom and creates the label file all at once
     public bool BuildLibrary(ROM rom)
     {
-        MessageWriter.Write(false, "Building external library..." + Environment.NewLine);
-
         string[] files;
         
         try

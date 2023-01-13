@@ -19,6 +19,10 @@
 // reiterate in readme that DBR still isn't set in NMI
 // clean up temp files after run (have a file util static class), and run it in Abort() and after success
 // rethink how %prot() macros work in terms of directories (currently it's relative to parent of macrolib file, with no way to specify absolute path)
+// add in verbose: debug or something in addition to regular verbose mode
+// if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
+//   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
+//   bytes command
 
 global using System;
 global using System.Collections.Generic;
@@ -60,6 +64,8 @@ public class Program
 
         if (args.Length > 2) { Pause(); return 1; }
         string listFile = (args.Length >= 1) ? args[0] : "list.txt";
+
+        MessageWriter.Write(true, "Processing list file...");
         IEnumerable<ConfigStatement> statements = ListParser.ParseList(listFile);
         if (statements == null) { Abort(); return 1; }
 
@@ -81,14 +87,19 @@ public class Program
         }
         if (!rom.Load(romfile)) { Abort(); return 1; }
 
+        MessageWriter.Write(true, "Cleaning previous runs...");
         if (!rom.Patch("asm/base/clean.asm")) { Abort(); return 1; }
 
+        MessageWriter.Write(true, "Building library...");
         if (!lib.BuildLibrary(rom)) { Abort(); return 1; }
         if (!lib.GenerateLibraryLabelFile()) { Abort(); return 1; }
 
+        MessageWriter.Write(true, "Building resources...");
         if (!resourceHandler.BuildResources(config, rom)) { Abort(); return 1; }
         if (!resourceHandler.GenerateResourceLabelFile()) { Abort(); return 1; }
 
+        MessageWriter.Write(true, "Building main patch" +
+            "...");
         config.AddNMIDefines(rom);
         if (!config.GenerateCallFile()) { Abort(); return 1; }
         if (!GeneratePointerListFile(lib, resourceHandler)) { Abort(); return 1; }
