@@ -26,6 +26,13 @@ else
     lorom
 endif
 
+; Fail if the current running version of UAT is below major.minor
+macro require_uber_ver(major, minor)
+    if (<major>*256)+<minor> > (!UberMajorVersion*256)+!UberMinorVersion
+        error "This resource requires UberASM Tool version at least <major>.<minor>"
+    endif
+endmacro
+
 ; Protect binary file.
 macro prot_file(file, label)
     pushpc
