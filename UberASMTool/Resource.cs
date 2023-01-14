@@ -122,6 +122,6 @@ public class Resource
     {
         string output = "incsrc \"../base/resource_template.asm\"" + Environment.NewLine +
                         $"%UberResource(\"{Filename}\", {(SetDBR ? 1 : 0)})" + Environment.NewLine;
-        return Program.TryWriteFile("asm/work/resource.asm", output);
+        return FileUtils.TryWriteFile("asm/work/resource.asm", output);
     }
 }

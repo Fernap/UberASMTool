@@ -33,7 +33,7 @@ public class ResourceHandler
         foreach (Resource resource in resources)
             resource.GenerateLabels(output);
 
-        return Program.TryWriteFile("asm/work/resource_labels.asm", output.ToString());
+        return FileUtils.TryWriteFile("asm/work/resource_labels.asm", output.ToString());
     }
 
     public bool BuildResources(UberConfig config, ROM rom)

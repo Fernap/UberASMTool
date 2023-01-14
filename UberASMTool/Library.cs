@@ -49,7 +49,7 @@ public class LibraryHandler
             string output = "incsrc \"../base/library_template.asm\"" + Environment.NewLine +
                             $"%UberLibrary(\"{relPath}\", {(binary ? 1 : 0)})" + Environment.NewLine;
 
-            if (!Program.TryWriteFile("asm/work/library.asm", output))
+            if (!FileUtils.TryWriteFile("asm/work/library.asm", output))
                 return false;
             if (!rom.Patch("asm/work/library.asm"))
                 return false;
@@ -122,6 +122,6 @@ public class LibraryHandler
         foreach (KeyValuePair<string, int> label in labels)
             output.AppendLine($"{label.Key} = ${label.Value:X6}");
 
-        return Program.TryWriteFile("asm/work/library_labels.asm", output.ToString());
+        return FileUtils.TryWriteFile("asm/work/library_labels.asm", output.ToString());
     }
 }

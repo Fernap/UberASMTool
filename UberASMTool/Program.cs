@@ -6,13 +6,11 @@
 // make the naming of NMI labels consistent in the patches
 // optimize level/ow/gm call code for situations where none are being called
 // Put something in empty folders so they actually go to github, even just readmes
-// clean up temp files after run (have a file util static class), and run it in Abort() and after success
 // rethink how %prot() macros work in terms of directories (currently it's relative to parent of macrolib file, with no way to specify absolute path)
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
 // acount for prot files in insert sizes
-// when adding temp file deletion, have a rom failure call this too
 
 global using System;
 global using System.Collections.Generic;
@@ -98,7 +96,12 @@ public class Program
         if (!rom.ProcessPrints("asm/base/main.asm", out int start, out int end, null)) { Abort(); return 1; }
         int mainSize = end - start + 8;
 
-        if (!rom.Save()) { Pause(); return 1; }
+        if (!rom.Save())
+        { 
+            FileUtils.DeleteTempFiles();
+            Pause();                          // don't want to print the standard "your rom has not been modified" message in this case
+            return 1;
+        }
 
         MessageWriter.Write(VerboseLevel.Verbose, $"  Main patch insert size: {mainSize} bytes.");
         MessageWriter.Write(VerboseLevel.Verbose, $"  Library insert size: {lib.Size} bytes.");
@@ -109,6 +112,7 @@ public class Program
         MessageWriter.Write(VerboseLevel.Normal, "All code inserted successfully.");
 
         WriteRestoreComment(config.ROMFile, $"{UberMajorVersion}.{UberMinorVersion}");
+        FileUtils.DeleteTempFiles();
 
         // Pause();
         return 0;
@@ -118,6 +122,7 @@ public class Program
     {
         MessageWriter.Write(VerboseLevel.Quiet, "Some errors occured while running UberASM Tool.  Process aborted.");
         MessageWriter.Write(VerboseLevel.Quiet, "Your ROM has not been modified.");
+        FileUtils.DeleteTempFiles();
         Pause();
     }
 
@@ -151,7 +156,7 @@ public class Program
         foreach (int addr in lib.Cleans.Concat(res.Cleans))
             output.AppendLine($"dl ${addr:X6}");
 
-        return TryWriteFile("asm/work/pointer_list.asm", output.ToString());
+        return FileUtils.TryWriteFile("asm/work/pointer_list.asm", output.ToString());
     }
 
     private static void WriteRestoreComment(string romfile, string ver)
@@ -171,20 +176,4 @@ public class Program
             MessageWriter.Write(VerboseLevel.Normal, $"Warning: could not update contents of extmod file: {e.Message}");
         }
     }
-
-// this should probably go in a FileUtils helper class or something
-    public static bool TryWriteFile(string file, string text)
-    {
-        try
-        {
-            File.WriteAllText(file, text);
-        }
-        catch (Exception e)
-        {
-            MessageWriter.Write(VerboseLevel.Quiet, $"Error writing file \"{file}\": {e}");
-            return false;
-        }
-        return true;
-    }
-
 }

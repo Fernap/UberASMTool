@@ -111,7 +111,7 @@ public class UberConfig
             overworldContext.GenerateExtraBytes(output, resource);
         }
 
-        return Program.TryWriteFile("asm/work/extra_bytes.asm", output.ToString());
+        return FileUtils.TryWriteFile("asm/work/extra_bytes.asm", output.ToString());
     }
 
     public bool GenerateCallFile()
@@ -122,6 +122,6 @@ public class UberConfig
         gamemodeContext.GenerateCalls(output);
         overworldContext.GenerateCalls(output);
 
-        return Program.TryWriteFile("asm/work/resource_calls.asm", output.ToString());
+        return FileUtils.TryWriteFile("asm/work/resource_calls.asm", output.ToString());
     }
 }

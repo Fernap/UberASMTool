@@ -12,7 +12,6 @@
 //     unexpected character after filename (not ":" or ",") or after extra bytes
 
 using Pidgin;
-using System.Xml.Linq;
 using static Pidgin.Parser;
 using static Pidgin.Parser<char>;
 
