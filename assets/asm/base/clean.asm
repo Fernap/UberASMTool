@@ -1,4 +1,4 @@
-; This will clean out the freecode blocks pointed to by the tables immediately preceeding the level, gamemode, overworld, and global hijack routines
+; This will clean out the freecode blocks pointed to by the tables immediately preceding the level, gamemode, overworld, and global hijack routines
 ; First, for level, gamemode, and overworld resources (for 1.x....these are unused as of 2.0)
 ; Then for the table preceeding the global code hijack (used for "prot"ed items in 1.x, used for everything in 2.0+)
 
@@ -14,10 +14,12 @@
 
 if read1($00FFD5) == $23
     sa1rom
+    !sa1 = 1
     !addr = $6000
     !bank = $000000
 else
     lorom
+    !sa1 = 0
     !addr = $0000
     !bank = $800000
 endif
@@ -78,16 +80,49 @@ macro CleanOld(hijack, size, ext)
     endif
 endmacro
 
+; Detect UAT 1.x's presence by looking for the level pointer table
+!uber1 = 0
+if read1(!level_hijack) == $5C                ; JML ____
+    !ptr #= read3(!level_hijack+1)-4
+    if read4(!ptr) == !text_tool
+        !uber1 = 1
+    endif
+endif
+
+; Detect UAT 2.0+'s presence by looking for the header
+!uber2 = 0
 if read4(!uber_header) == !text_UBER
+    !uber2 = 1
+endif
+
+if !uber2
     if not(!OldVersionOverride)
         if (read1(!uber_header+4)<<8)+read1(!uber_header+5) > (!UberMajorVersion<<8)+!UberMinorVersion
             error "You are attempting to run an older version of UberASM Tool than was used on your ROM."
         endif
     endif
-else
+endif
+
+; Clean pointer table info if 1.x detected
+if !uber1
     %CleanOld(!gamemode_hijack, 256, 0)    ; these only need to be checked if 2.0+ hasn't been run yet
     %CleanOld(!level_hijack, 512, 1)
     %CleanOld(!overworld_hijack, 7, 0)
 endif
 
+; Global pointer table used for both
 %Clean(!global_hijack)
+
+; Restore code from hijack that ran main: for the global code file, which is no longer used
+if !uber1
+    if !sa1
+        org $00806B
+            jmp $1E8E
+            nop
+    else
+        org $00806B
+        -
+            lda $10
+            beq -      ; restores original code
+    endif
+endif

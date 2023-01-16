@@ -88,24 +88,6 @@ org $009322
 org $00804E
     autoclean JML GlobalInit
 
-; this previously ran main: for the global code file, but
-; no longer used, so this restores the original game code in case there's a JML here from a previous version
-; maybe skip the read1() and just restore
-; or really, this should base the decision to restore on whether or not uber < 2.0 was detected
-; so detect it and make a define
-if read1($00806B) == $5C
-    if !sa1
-        org $00806B
-            jmp $1E8E
-            nop
-    else
-        org $00806B
-        -
-            lda $10
-            beq -      ; restores original code
-    endif
-endif
-
 ; this handles the nmi: label for level, overworld, and gamemode resources
 ; it also used to call nmi: for the global code file, but this is no longer used
 ; instead, use an nmi: label in a * file for gamemode
