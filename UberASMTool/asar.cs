@@ -316,7 +316,7 @@ namespace AsarCLR
         /// <returns>All Asar's errors.</returns>
         public static Asarerror[] geterrors()
         {
-            int length;
+            int length = 0;
             RawAsarError* ptr = asar_geterrors(out length);
             return cleanerrors(ptr, length);
         }
@@ -327,7 +327,7 @@ namespace AsarCLR
         /// <returns>All Asar's warnings.</returns>
         public static Asarerror[] getwarnings()
         {
-            int length;
+            int length = 0;
             RawAsarError* ptr = asar_getwarnings(out length);
             return cleanerrors(ptr, length);
         }
@@ -365,7 +365,7 @@ namespace AsarCLR
         /// <returns>All Asar's labels.</returns>
         public static Asarlabel[] getlabels()
         {
-            int length;
+            int length = 0;
             RawAsarLabel* ptr = asar_getalllabels(out length);
             Asarlabel[] output = new Asarlabel[length];
 
@@ -412,7 +412,7 @@ namespace AsarCLR
         /// <returns>All Asar's defines.</returns>
         public static Asardefine[] getalldefines()
         {
-            int length;
+            int length = 0;
             RawAsarDefine* ptr = asar_getalldefines(out length);
             Asardefine[] output = new Asardefine[length];
 
@@ -483,7 +483,7 @@ namespace AsarCLR
         /// <returns>All Asar's blocks written to the ROM.</returns>
         public static Asarwrittenblock[] getwrittenblocks()
         {
-            int length;
+            int length = 0;
             RawAsarWrittenBlock* ptr = asar_getwrittenblocks(out length);
             return CleanWrittenBlocks(ptr, length);
         }
