@@ -31,7 +31,7 @@ public class Program
     private static int Main(string[] args)
     {
         Directory.SetCurrentDirectory(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
-        MainDirectory = Environment.CurrentDirectory + "/";
+        MainDirectory = Environment.CurrentDirectory;
 
         if (!Asar.init())
         {

@@ -109,7 +109,7 @@ public class ROM
     // asmfile is relative to the main directory
     public bool Patch(string asmfile)
     {
-        bool status = Asar.patch(Program.MainDirectory + asmfile, ref romData, null, true, defines);
+        bool status = Asar.patch(Path.Combine(Program.MainDirectory, asmfile), ref romData, null, true, defines);
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
             MessageWriter.Write(VerboseLevel.Quiet, $"  {error.Fullerrdata}");
