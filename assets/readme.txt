@@ -6,64 +6,96 @@
  \____/|_.__/ \___|_|/_/    \_\_____/|_|  |_|    |_|\___/ \___/|_|
          Version 2.0                By Vitor Vilela & Fernap
 
-Thank you for downloading my tool. I hope it helps you though your
+Thank you for downloading UberASM Tool.  We hope it helps you on your
 SMW hacking journey.
 
-UberASM Tool allows you to easily insert level ASM, overworld ASM,
-game mode ASM and much more. It was inspired from GPS, Sprite Tool,
-edit1754's levelASM tool, levelASM+NMI version and
-33953YoShI's japanese levelASM tool.
-
-At same time UberASM Tool allows easy insertion and distribution of
-code, it has a very robust support for complex ASM projects, with
-a shared library where you can put your .asm and .bin files without
-worrying about freespace and bank overflows.
-
-Features:
- - Level ASM (INIT/MAIN/NMI*/LOAD*)
- - Overworld ASM (INIT/MAIN/NMI*/LOAD*)
- - Game mode ASM (INIT/MAIN/NMI*)
- - Global code ASM (INIT*/MAIN/NMI)
- - Status bar code (MAIN)
- - Shared library with binary support
- - Macro and defines library
- - Automatic multiple banks support
- - Automatic patching and cleaning
- - Native SA-1 support
- - Friendly list with various settings
- - LM Restore System signature
- - Easily editable source code.
-
 ---------------------------------------------------------------------
--                         Overview                                  -
+-                         Overview/FAQ                              -
 ---------------------------------------------------------------------
 
-* Specific features not present in original uberASM patch.
-- relationship to UAT
-- GM 14 vs level *
+Q. What is UberASM Tool?
 
-Intro: What is UAT? etc
-history, possible issues with old resources
-relegate that stuff to troubleshooting below
+A. UberASM Tool is a program that lets you manage various UberASM
+resources, applying them to different levels (usually levels, but sometimes
+overworld maps, or game modes) as you wish.  UberASM Tool applies several
+hijacks in key places in an SMW ROM which allow it to run code for UberASM
+resources at specific times during the game, such as once per frame during
+levels.  This approach offers a good compromise between flexibility and
+ease of managing resources; resources can be added, removed, or applied to
+different levels easily.  You can generally do more things with a dedicated
+patch than with an UberASM resource, but removing a patch or having a patch
+be active only for certain level is generally more difficult.  There's also
+much less risk of two UberASM resources conflicting with each other than
+there is for two patches.
+
+
+
+Q. What's new in 2.0, and what should I be aware of when upgrading to 2.0
+from 1.x?
+
+A. Version 2.0 of UberASM Tool is a signficant update to the program.  If
+you try to run it out of the box with your existing list.txt file, you'll
+notice an error during list processing that the sprite: command is no
+longer supported.  Simply change "sprite:" to "freeram:" in your list.txt,
+and remove the "sprite-sa1:" line.
+
+Other new features include:
+- Multiple resources per level/overworld/game mode.  No more library
+workaround for combining resources.  See "The List File" section for how to
+do this.
+- You can also specify resources that run on all levels (or overworld maps
+or game modes).  This mostly does away with the need to use game mode 14
+for this purpose.  See "The List File" section for more information.
+- The ability for resources to use extra bytes, similar to the way they're
+used for sprites.  This lets resources take parameters in the form of extra
+bytes supplied in list.txt.  This lets you use the same resource in
+different configurations for different levels without having to make a
+copies, as you would have previously.  See "The List File" section for more
+information.
+- A new "end:" label to let resources run code at the end of frames.  This
+gives resources the opportunity to achieve certain effects that weren't
+possible with UberASM before.  See the "Labels" section below for more
+information.
+- A bunch more little tweaks and improvements.  See the changelog for a
+full list.
+
+
+
+Q. Help!  ___ doesn't work anymore!
+
+A. That's not a question!  See the incompatibilities.txt file for known
+incompatibilities and what to do about them.
+
+
+
+Q. I've downloaded a patch/block/sprite that has some uberasm, but the
+instructions don't really make sense with the current version of UberASM
+Tool.  What should I do?
+
+A. You've probably got something meant for the global code file or even the
+original UberASM patch.  See the "Common Issues" section below for steps
+to make them work.
+
+------------------------------------------------------------------------------
 
 Table of Contents:
 
 Part I: General Use
   - Quick Start
   - Running UberASM Tool
-  - The list file
-  - The library
-  - Troubleshooting
+  - The List File
+  - The Library
+  - Common Issues
 
 Part II: Technical Information
   - Resources
   - Labels
   - The DBR
-  - Extra bytes
+  - Extra Bytes
   - NMI
-  - SA1
-  - The library
-  - Other code files
+  - SA-1
+  - The Library
+  - Other Code Files
   - Dos and Don'ts
 
 =====================================================================
@@ -90,6 +122,10 @@ so be sure to check for them).
 command to point to the location of your ROM file.  It can be given either
 relative to the UberASM Tool executable (like "../myrom.smc") or as an
 absolute path.
+
+3.5. If you're upgrading from 1.x and using an existing list.txt file,
+remove the line with "sprite-sa1:" (if it's there), and on the line with
+"sprite: ...", change "sprite" to "freeram".
 
 4. Add the resources you want to use to the list.txt file.  For example, to
 use a resource named LRonoff.asm in the level/ folder for level 105, you'd
@@ -118,17 +154,18 @@ UberASM Tool executable file.  Alternatively, you can simply double click
 the executable and it will run as if no command line arguments were given.
 
 ---------------------------------------------------------------------
--                         The list file                             -
+-                         The List File                             -
 ---------------------------------------------------------------------
 
 The list file (list.txt by default) contains configuration information for
-UberASM Tool, including resources to use and some other stuff (FIX).  For
-commands that take file names, you can either give absolute paths, or you
-can give relative paths, in which case UberASM Tool will look relative the
-directory of the UberASM Tool executable.
+UberASM Tool, including what resources to use for what level/game
+mode/overworld map, along with some other information.  For commands that
+take file names, you can either give absolute paths, or you can give
+relative paths, in which case UberASM Tool will look relative the directory
+of the UberASM Tool executable.
 
 You may add comments to the list file.  A ";" or a "#" on a line is
-considered to be a comment and the rest of the line is ignored.
+considered to begin a comment, and the rest of the line is ignored.
 
 The following commands are available:
 
@@ -139,11 +176,12 @@ The following commands are available:
 
    quiet: Only error messages are displayed
    off:   Basic information about progress is also displayed
-   on:    Extra information is displayed, such as individual
-   library/resource file progress, and a more detailed breakdown of total
-   insert size
+   on:    Extra information is displayed, such as individual library/
+          resource file progress, and a more detailed breakdown of total
+          insert size
    debug: Even more detailed information is displayed for debugging
-   purposes.  Also prevents UAT from deleting temporary files in asm/work/
+          purposes.  Also prevents UAT from deleting temporary files
+          in asm/work/
 
  - rom: <ROM file>
 
@@ -181,15 +219,14 @@ The following commands are available:
 Finally, anything else is interpreted as assigning resources to
 levels/gamemodes/overworlds, which has the form:
 
-<number|*> <asm file> [: <extra byte 1> <extra byte 2> ... <extra byte n>]
-[, ...]
+<number|*> <asm file> [: <extra byte 1> <extra byte 2> ...] [, ...]
 
 <number> is the level number (0-1FF), game mode number (0-FF), or overworld
 number (0-6, 0 = Main map; 1 = Yoshi's Island; 2 = Vanilla Dome; 3 = Forest
 of Illusion; 4 = Valley of Bowser; 5 = Special World; and 6 = Star World).
 Numbers here must be in hexadecimal.  You can also specify "*" instead of a
 number, which is a special value that indicates that this resource is to
-run on all levels (or game mdoes, or overworlds).
+run on all levels (or game modes, or overworlds).
 
 <asm file> is the name of the resource file to use.  For levels, UAT looks
 relative to the level/ folder, for game modes, the gamemode/ folder, and
@@ -234,16 +271,17 @@ for clarity:
 ---------------------------------------------------------
 
 - "level:" says we're now giving resources for levels
-- assigns the resource file incio.asm (which is in the level/ folder) to
-level 105
-- assigns all of incio.asm, waves.asm, gradient.asm to level 106
-- switches to specifying resources for overworlds
-- assigns the resource music.asm (in the overworld/ folder) to all
-overworlds
-- switches back to specifying resources for levels
-- assigns two resources to level 107: special.asm (which takes one extra
-byte) with an extra byte of 100 (decimal), and also music.asm from the
-overworld/ folder.
+- level 105 is assigned the resource incio.asm (which is in the level/
+  folder)
+- level 106 is assigned the three resources incio.asm, waves.asm, and
+  gradient.asm
+- "overworld:" says we're now giving resources for overworld maps
+- the resource music.asm (in the overworld/ folder) is assigned to all
+  overworlds
+- "level:" switches back to specifying resources for levels
+- level 107 is assigned the resource special.asm (which takes one extra
+  byte) with an extra byte of 100 (decimal), and then the resource
+  music.asm from the overworld/ folder.
 
 
 
@@ -251,20 +289,77 @@ overworld/ folder.
 -                         The Library                               -
 ---------------------------------------------------------------------
 
-TODO (very brief, just mention that resources may come with library files)
-(more detail below)
+Some resources may come with external library files.  These should be
+placed in UberASM Tool's library/ folder.  Any files in here are
+automatically included in your ROM and made available to UberASM resources.
+See below for more technical detail on UberASM's library system.
+
+
+
 
 ---------------------------------------------------------------------
--                         Troubleshooting                           -
+-                         Common Issues                             -
 ---------------------------------------------------------------------
 
-TODO (or common issues maybe)
-- adapting old code:
-   - what to do with global code (global load -> level *; global main ->
-   gamemode *; global nmi -> gamemode *)
-   - old levelASM stuff
-- incompatibilities w/ lx5 nsmb star coin patch & hb's slide kill thing
-- note about running an old version of UAT on a rom with a newer version
+As of the 2.0 release of UberASM Tool, there are a couple incompatible
+patches: lx5's NSMB star coins patch, and HammerBrother's SMA2 Slide Kill
+Chain patch.  Assuming they haven't been updated by the time you read this,
+see the "incompatibilities.txt" file for instructions on making them work
+with the new version.
+
+---
+
+You may run into resources (patches, uberasm, etc) that want you to copy
+and paste some code into UberASM Tool's global code file.  If that code was
+destined for the "init:" label, it should work the same, but previous
+versions (1.x) also had support for "main:", "load:", and "nmi:" labels,
+which are no longer used.  For code that goes under "load:", make a new
+file and place the code under a "load:" label, but ending with RTL instead
+of RTS as the instructions might suggest.  So,
+
+load:
+    <code to paste>
+    RTL
+
+Then put the new file in UAT's level/ folder and add it as a resource for
+level "*" in your list.txt file.  Similarly, for code that goes under
+"main:", make a new file and place the code under both "main:" and "init:".
+So,
+
+init:
+main:
+    <code to paste>
+    RTL
+
+Then put the new file in UAT's gamemode/ folder and add it as a resource
+for gamemode "*" in your list.txt file.  For global code for the "nmi:"
+label, do the same, but just place it under "nmi:" in a new file.
+
+---
+
+Some even older resources may talk about pasting code under "level###:" or
+something similar.  If you run into this situation, you'll want to make a
+new .asm file (for level, overworld, or game mode, as appropriate) and
+paste the given code under a label called "main:", but ending with RTL
+instead of RTS.  Similarly, code for "level###init:" should go under a
+label called "init:", also ending with RTL instead of RTS.  Then add the
+new file to your list.txt wherever you want to use it.
+
+---
+
+As of version 2.0, UberASM Tool will refuse to run on a ROM that has had a
+newer version of UberASM Tool used on it.  It's recommended that you simply
+upgrade to the current version in this case.  If for some reason you can't
+do that, you can force it to run by editing the asm/base/clean.asm file,
+and changing the "!OldVersionOverride" define to 1.  But do so at your own
+risk; future versions may introduce breaking changes that will prevent
+older versions from working correctly.  Also note that versions 1.x make no
+such check and will attempt to run anyway.  As of 2.0, it should still work
+properly, but again, this may change in the future.
+
+
+
+-----------------------------------------------------------------------------
 
 =====================================================================
 =                                                                   =
@@ -274,21 +369,23 @@ TODO (or common issues maybe)
 
 The following sections describe the technical aspects of UAT in more
 detail.  This is mainly intended for programmers and resource creators.  If
-you're only hacking, you shouldn't need anything here, although there may
-still be some useful information.
+you're making a hack without getting into the details of ASM programming,
+you can probably skip this part, although there may still be some useful
+information.
 
 ---------------------------------------------------------------------
 -                         Resources                                 -
 ---------------------------------------------------------------------
 
-Resources are the main entities that UberASM Tool runs (bleh).  They can be
-run for levels, for particular game modes, or for particular overworld
-maps.  However, there's no fundamental difference between the types, and a
-level resource can also be used as an overworld resource, for example.  To
-make a resource for UberASM Tool, you simply need an .asm file that
-contains one or more special labels that UAT calls.  These labels are
-"main:", "init:", "nmi:", "load:" (for levels only), and "end:" (new to
-v2.0).  See below for more specific information on each label.
+Resources are the main entities that UberASM Tool uses to achieve affects
+in the game.  They can be used for levels, for particular game modes, or
+for particular overworld maps.  However, there's no fundamental difference
+between the types, and a level resource can also be used as an overworld
+resource, for example.  To make a resource for UberASM Tool, you simply
+need an .asm file that contains one or more special labels that UAT calls.
+These labels are "main:", "init:", "nmi:", "load:" (for levels only), and
+"end:" (new to v2.0).  See below for more specific information on each
+label.
 
 As of v2.0, resources can also specify that they take extra bytes, similar
 to extra bytes for custom sprites.  For example, suppose you have an
@@ -303,6 +400,26 @@ same resource can be used in multiple levels with different wind speed
 values.  See the section on extra bytes below for more information on how
 to write resources that use this feature, and see above for how users can
 specify extra bytes for resources in the list file.
+
+For example, here's a level resource that drains one coin from Mario every
+4 frames:
+
+-----------------------------------------------------------
+| main:                                                   |
+|     LDA $9D                                             |
+|     BEQ .Return   ; don't run if sprites are locked     |
+|     LDA $0DBF|!addr                                     |
+|     BEQ .Return      ; don't run if already at 0 coins  |
+|     LDA $14                                             |
+|     AND #$03                                            |
+|     BNE .Return      ; only run every 4th frame         |
+|     DEC $0DBF|!addr  ; decrement coin count             |
+| .Return:                                                |
+|     RTL                                                 |
+-----------------------------------------------------------
+
+
+
 
 ---------------------------------------------------------------------
 -                         Labels                                    -
@@ -326,7 +443,10 @@ Game mode code's "init:" and "main:" labels will run at the start of the
 main game loop.  On the first frame the mode is active, "init:" is run, and
 on all subsequent frames "main:" is run.  The "end:" label is run after the
 entire rest of the game loop, including the $0420 -> $0400 conversion
-routine.
+routine.  You may have noticed that UberASM Tool supports game modes
+00-FF, even though SMW only uses game modes 00-29.  Any game mode 2A
+or higher is a custom mode, and thus there will be no base SMW routine to
+run (except for the standard NMI routine).
 
 For all resource types, the "nmi:" label runs early during SMW's NMI
 routine.  Level resources have their NMI label called during game modes $13
@@ -350,7 +470,7 @@ you don't need to worry about restoring it (unless set to a bank without
 RAM mirrors); UAT will do so after all resources have been called.
 
 ---------------------------------------------------------------------
--                         Extra bytes                               -
+-                         Extra Bytes                               -
 ---------------------------------------------------------------------
 
 To tell UberASM Tool that a resource takes extra bytes, it must contain a
@@ -416,12 +536,14 @@ code as above, you would have something like:
 |     endif                           |
 |     ; do something                  |
 |     ; ...                           |
-|    RTL                              |
+|     RTL                             |
 ---------------------------------------
 
 Note that if you write a resource that uses extra bytes, but someone
 attempts to insert it with an older (1.x) version of UberASM Tool, it will
-still appear to insert correctly, but it won't
+still appear to insert correctly, but it won't.  You can use the
+%require_uber_ver() macro to cause it to fail to insert in older
+versions; see the "Other Code Files" section for more information.
 
 ---------------------------------------------------------------------
 -                         NMI                                       -
@@ -455,7 +577,7 @@ exception of $00-01 ($0000-0001 on SA-1); UberASM Tool uses this itself and
 restores it after all resources have been called.
 
 ---------------------------------------------------------------------
--                         The library                               -
+-                         The Library                               -
 ---------------------------------------------------------------------
 
 UberASM Tool supports a system for shared library code that different
@@ -493,7 +615,7 @@ include a shared routine system in a future version, similar to that of
 Pixi and GPS that should offer more flexibility.
 
 ---------------------------------------------------------------------
--                         Other code files                          -
+-                         Other Code Files                          -
 ---------------------------------------------------------------------
 
 The macro library file (given by macrolib: in the list file) contains
@@ -527,7 +649,13 @@ worth noting.
 
 The status bar code file (given by statusbar: in the list file) has only
 one label used, "main:", which is run during levels, a little later than
-normal main: code, right before the status bar is updated.
+normal main: code, right before the status bar is updated.  Any code
+here should also end in RTS instead of RTL
+
+Note that unlike regular resources, code for the status bar and global
+code files is included with the main UberASM patch, rather than
+getting their own freecode blocks.  Due to how these are built, you
+also can't use the %prot macros in these.
 
 ---------------------------------------------------------------------
 -                         SA-1                                      -
@@ -574,44 +702,51 @@ if making a resource that needs to access extra bytes during NMI.
 -                         Dos and Don'ts                            -
 ---------------------------------------------------------------------
 
-- (put at the end)
-- UAT turns on global namespaces for resources and libraries; don't turn
-them off
-- If you do set a namespace in your code somewhere, make sure to exit it as
-well
-- Don't add your own hijacks (is technically possible, but should be
-avoided)
-- Do %require_uber_ver(2,0) if your resource uses extra bytes
+Just a few random reminders for good practice when making resources:
 
---
+- UAT turns on global namespaces for resources and libraries; DON'T turn
+them off.  And if you do set a namespace in your code somewhere, DO make
+sure to exit it as well
 
-other stuff that needs to be mentioned
-- %prot macros (including that filename is relative to parent of macrolib
-dir)
-- resources/libraries get their own freecode areas, but global init and
-statusbar don't
-- statusbar & global code
-- custom game modes
-- installed version at 01CD1E
+- DON'T add your own hijacks.  It's possible to do, but it runs the risk
+of confusing the patching process.  Just leave patches in a separate
+file to be applied with Asar directly.
+
+- DO %require_uber_ver(2,0) if your resource uses extra bytes.  Failing
+to do so will let someone add it with version 1.x appear to add it, but
+it won't work correctly due to lack of extra byte support.
+
+=============================================================================
+
 
 ---------------------------------------------------------------------
 -                             Credits                               -
 ---------------------------------------------------------------------
 
-I'd like to thank:
+UberASM Tool was inspired by GPS, Sprite Tool, edit1754's levelASM tool,
+levelASM+NMI version and 33953YoShI's japanese levelASM tool.
+
+Vitor would like to thank:
  - edit1754 for the original LevelASM Tool idea;
  - p4plus2 for the original uberASM patch;
  - Alcaro/byuu/Raidenthequick for Asar; and
  - 33953YoShI/Mirann/Wakana for testing.
  - 33953YoShI again for giving me the LOAD label base hijack and idea.
 
+Fernap would also like to thank:
+ - Atari2.0 and TheBiob for help with Visual Studio
+
 ---------------------------------------------------------------------
 -                             Contact                               -
 ---------------------------------------------------------------------
 
-You can contact me though the following links:
+You can contact Vitor though the following links:
 
 * My Github profile: https://github.com/VitorVilela7
 * My Twitter profile: https://twitter.com/HackerVilela
 * My personal blog: https://vilela.sneslab.net/
 
+You can contact Fernap at
+
+* My SMWC profile: https://www.smwcentral.net/?p=pm&do=compose&user=48050
+* Or as Fernap#8699 on the SMWC Discord: https://discord.gg/smwc
