@@ -52,10 +52,13 @@ bytes supplied in list.txt.  This lets you use the same resource in
 different configurations for different levels without having to make a
 copies, as you would have previously.  See "The List File" section for more
 information.
-- A new "end:" label to let resources run code at the end of frames.  This
-gives resources the opportunity to achieve certain effects that weren't
-possible with UberASM before.  See the "Labels" section below for more
-information.
+- (For programmers) A new "end:" label to let resources run code at the end
+of frames.  This gives resources the opportunity to achieve certain effects
+that weren't possible with UberASM before.  See the "Labels" section below
+for more information.
+- (For programmers) Support for shared routines, similar to (but slightly
+different than) those of Pixi and GPS.  See the "Shared Routines" section
+for more information.
 - A bunch more little tweaks and improvements.  See the changelog for a
 full list.
 
@@ -95,6 +98,7 @@ Part II: Technical Information
   - NMI
   - SA-1
   - The Library
+  - Shared Routines
   - Other Code Files
   - Dos and Don'ts
 
@@ -373,6 +377,8 @@ you're making a hack without getting into the details of ASM programming,
 you can probably skip this part, although there may still be some useful
 information.
 
+
+
 ---------------------------------------------------------------------
 -                         Resources                                 -
 ---------------------------------------------------------------------
@@ -454,6 +460,8 @@ and $14, and overworld resources during game modes $0D and $0E.  In both
 cases, actual game mode code under "nmi:" will run first.  See the "NMI"
 section for more information.
 
+
+
 ---------------------------------------------------------------------
 -                         The DBR                                   -
 ---------------------------------------------------------------------
@@ -468,6 +476,8 @@ can be turned off for a resource if its .asm file contains the exact line
 somewhere in the source file.  Note that if you do need to set it manually,
 you don't need to worry about restoring it (unless set to a bank without
 RAM mirrors); UAT will do so after all resources have been called.
+
+
 
 ---------------------------------------------------------------------
 -                         Extra Bytes                               -
@@ -545,6 +555,8 @@ still appear to insert correctly, but it won't.  You can use the
 %require_uber_ver() macro to cause it to fail to insert in older
 versions; see the "Other Code Files" section for more information.
 
+
+
 ---------------------------------------------------------------------
 -                         NMI                                       -
 ---------------------------------------------------------------------
@@ -575,6 +587,8 @@ $0000-000F, which is scratch WRAM that the SA-1 CPU has no access to.  Any
 scratch memory that you use during lag must be preserved, with the
 exception of $00-01 ($0000-0001 on SA-1); UberASM Tool uses this itself and
 restores it after all resources have been called.
+
+
 
 ---------------------------------------------------------------------
 -                         The Library                               -
@@ -610,9 +624,61 @@ stuff_My_routine_.
 The main disadvantages of the library system are that library files are
 included in the ROM whether or not they're actually used.  So you may wind
 up with wasted ROM space.  Also, library files cannot call routines in (or
-more generally see labels of) other library files.  There are plans to
-include a shared routine system in a future version, similar to that of
-Pixi and GPS that should offer more flexibility.
+more generally see labels of) other library files.  However, as of version
+2.0, UberASM Tool has support for a shared routine system similar to that
+of Pixi and GPS.  See below for more information.
+
+
+
+---------------------------------------------------------------------
+-                         Shared Routines                           -
+---------------------------------------------------------------------
+
+UberASM Tool 2.0 adds support for shared routines.  These are similar to
+those of Pixi and GPS, but are implemented a little differently.  Shared
+routines are simply .asm files that have common code that different
+resources can call (one routine per file).  To call a shared routine called
+"Name", add the line
+
+    %UberRoutine(Name)
+
+to your resource code.  (This differs from Pixi and GPS, where you'd simply
+call %Name() instead).  Routine files must be located in the routines/
+directory; see there for what's already included and available to use.
+Note that unlike libraries, routines are added to the ROM on-demand.  If
+nothing uses a routine, it won't take up any space in the ROM.  Also unlike
+libraries, shared routines may call other shared routines freely.  And note
+that libraries may call shared routines.  On the other hand, whether or not
+a shared routine can call a library will depend on where the routine is
+first used; if it's first used from a resource, it will work, but if it's
+first used from a library, it won't (because libraries can't call other
+libraries).  It's probably best to just avoid this case altogether.
+
+To make your own shared routine, simply create a new asm file with the name
+of the routine in the routines/ directory (it must be directly in
+routines/, not in a subdirectory).  Execution starts at the beginning of
+the file; no label is needed there.  The routine is JSLed to, so the DBR is
+not set automatically, and your routine should end with an RTL.
+
+IMPORTANT: Due to the way shared routines are implemented, any labels in
+the routine MUST be macro-local; that is, they must start with a question
+mark.  So, for example, a shared routine that returns the first open sprite
+slot in X (or $FF if there are none) might look like the following:
+
+routines/FindFreeSpriteSlot.asm
+------------------------------------
+|     LDX #!sprite_slots-1         |
+| ?-                               |
+|     LDA !sprite_status,x         |
+|     BEQ ?Return                  |
+|     DEX                          |
+|     BPL ?-                       |
+| ?Return:                         |
+|     RTL                          |
+------------------------------------
+
+You can then call this from any library, resource, or other shared routine
+file by using %UberResource(FindFreeSpriteSlot).
 
 ---------------------------------------------------------------------
 -                         Other Code Files                          -

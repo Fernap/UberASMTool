@@ -74,11 +74,11 @@ public class Resource
         MessageWriter.Write(VerboseLevel.Verbose, $"  Insert size: {Size} (0x{Size:X}) bytes");
         MessageWriter.Write(VerboseLevel.Verbose, "");
 
-        return ProcessLabels();
+        return ProcessLabels(rom);
     }
 
 // gets label information from Asar and adds it to this resource as needed
-    private bool ProcessLabels()
+    private bool ProcessLabels(ROM rom)
     {
         Asarlabel[] labels = Asar.getlabels();
 
@@ -94,8 +94,12 @@ public class Resource
 
         // this keeps the base ExtraBytes: label, even though nothing uses it
         foreach (Asarlabel label in labels)
+        {
+            if (label.Name.StartsWith("UberRoutine_") && !label.Name.Contains(':'))
+                rom.AddDefine(label.Name, $"${label.Location:X6}");
             if (label.Name.StartsWith("Inner_ExtraBytes"))
                 BytesLabels.Add(new Asarlabel { Name = label.Name.Substring("Inner_".Length), Location = label.Location });
+        }
 
         // Asar.getlabelval() crashes instead of returning -1 if the label doesn't exist for some reason, so doing this instead
         index = Array.FindIndex(labels, x => x.Name == "Inner_nmi");

@@ -69,7 +69,7 @@ public class LibraryHandler
                     return false;
 
             if (!binary)
-                if (!GetLabels(prefix, file))
+                if (!GetLabels(prefix, file, rom))
                     return false;
         }
 
@@ -80,14 +80,19 @@ public class LibraryHandler
     }
 
     // gets all the labels from a patched library .asm file and adds them to labels
-    private bool GetLabels(string prefix, string file)
+    private bool GetLabels(string prefix, string file, ROM rom)
     {
         int numlabels = 0;
 
         foreach (Asarlabel label in Asar.getlabels())
         {
-            if (label.Name.Contains(":"))      // s skips macro-local and +/- labels
+            if (label.Name.Contains(":"))      // skips macro-local and +/- labels
                 continue;
+            if (label.Name.StartsWith("UberRoutine_"))
+            {
+                rom.AddDefine(label.Name, $"${label.Location:X6}");
+                continue;
+            }
             if (!AddLabel($"{prefix}_{label.Name}", label.Location))
                 return false;
             numlabels++;

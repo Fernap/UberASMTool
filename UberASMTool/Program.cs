@@ -10,7 +10,9 @@
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
-// acount for prot files in insert sizes
+// account for prot files in insert size
+// account for routines in insert size
+// fix case issues: resources and routines get inserted multiple times if referenced with different casing
 
 global using System;
 global using System.Collections.Generic;

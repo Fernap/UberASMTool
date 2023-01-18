@@ -33,6 +33,20 @@ macro require_uber_ver(major, minor)
     endif
 endmacro
 
+macro UberRoutine(name)
+    if not(defined("UberRoutine_<name>"))
+        pushpc
+        freecode cleaned
+        print "_prot ", pc                  ; not really a prot, but close enough -- this will cause a fail if attempted in global_code or status_code unless already called first
+        global #UberRoutine_<name>:
+        !UberRoutine_<name> = UberRoutine_<name>
+        incsrc "../routines/<name>.asm"     ; this only works so long as macro lib file stays in other/ (or a sibling dir to routines/ at least)
+        pullpc
+    endif
+
+    jsl !UberRoutine_<name>
+endmacro
+
 ; Protect binary file.
 macro prot_file(file, label)
     pushpc
