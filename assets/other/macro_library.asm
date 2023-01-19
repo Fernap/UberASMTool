@@ -26,6 +26,11 @@ else
     lorom
 endif
 
+!EXLEVEL = 0
+if (((read1($0FF0B4)-'0')*100)+((read1($0FF0B4+2)-'0')*10)+(read1($0FF0B4+3)-'0')) > 253
+	!EXLEVEL = 1
+endif
+
 ; Fail if the current running version of UAT is below major.minor
 macro require_uber_ver(major, minor)
     if (<major>*256)+<minor> > (!UberMajorVersion*256)+!UberMinorVersion
