@@ -118,10 +118,18 @@ macro invoke_snes(addr)
 endmacro
 
 macro define_sprite_table(name, addr, addr_sa1)
-    if !sa1 == 0
-        !<name> = <addr>
-    else
+    if !sa1
         !<name> = <addr_sa1>
+    else
+        !<name> = <addr>
+    endif
+endmacro
+
+macro define_base2_address(name, addr)
+    if !sa1
+        !<name> #= <addr>|!addr
+    else
+        !<name> = <addr>
     endif
 endmacro
 
@@ -242,3 +250,25 @@ endmacro
 %define_sprite_table("1938", $1938, $418A00)
 %define_sprite_table("1FD6", $1FD6, $766E)
 %define_sprite_table("1FE2", $1FE2, $7FD6)
+
+;extended defines
+!ExtendedOffset = $13
+
+%define_base2_address(extended_num,$170B)
+%define_base2_address(extended_y_low,$1715)
+%define_base2_address(extended_y_high,$1729)
+%define_base2_address(extended_x_low,$171F)
+%define_base2_address(extended_x_high,$1733)
+%define_base2_address(extended_x_speed,$1747)
+%define_base2_address(extended_y_speed,$173D)
+%define_base2_address(extended_x_fraction,$175B)
+%define_base2_address(extended_y_fraction,$1751)
+%define_base2_address(extended_table,$1765)
+%define_base2_address(extended_timer,$176F)
+%define_base2_address(extended_behind,$1779)
+
+%define_base2_address(extended_table_1,$1765)
+%define_base2_address(extended_table_2,$198C)
+%define_base2_address(extended_table_3,$1996)
+%define_base2_address(extended_table_4,$19A0)
+%define_base2_address(extended_table_5,$19AA)

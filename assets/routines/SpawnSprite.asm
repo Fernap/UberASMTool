@@ -1,19 +1,19 @@
 ; Adapted from Pixi 1.4
-
-; SpawnSprite
 ;
-; Routine that spawns a normal or custom sprite.  Does not set speed (but defaults to 0) or position.
-; Use MoveSpriteRelativePlayer if you want to set it relative to the player's position
+; SpawnSprite: spawns a normal or custom sprite.  Does not set speed (defaults to 0) or position.
+; You must either set position manually or use MoveSpriteRelativePlayer/Sprite
 ;
-; Input:  A   = number of sprite to spawn
-;         C   = Carry bit clear for a normal sprite, set for a custom sprite
+; Input:
+;     A: number of sprite to spawn
+;     X: sprite slot to begin seaching downward from; usually set this to #!sprite_slots-1, but you can set lower if you need
+;     Carry bit clear for a normal sprite, set for a custom sprite
 ;
-; Output: X   = index to spawned sprite (#$FF means no sprite spawned)
-;         C   = Carry Set = spawn failed, Carry Clear = spawn successful.
+; Output:
+;     X: index to spawned sprite (#$FF means no sprite spawned)
+;     Carry bit set = spawn failed, Carry bit clear = spawn successful.
 
 ?main:
     XBA
-    LDX #!sprite_slots-1
 
 ?-
     LDA !sprite_status,x
@@ -42,8 +42,8 @@
         
     LDA #$08
     STA !extra_bits,x
+
 ?.not_custom:
-    
     LDA #$01
     STA !sprite_status,x
     
