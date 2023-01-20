@@ -2,17 +2,13 @@
 // Make sure to sync any changes in assets/asm to the folder that VS puts the executable for testing. (or vice versa)
 
 // TODO:
-// I may not need to bail out at the first sign of an error...look into how far I can push until that's really needed
-// make the naming of NMI labels consistent in the patches
-// optimize level/ow/gm call code for situations where none are being called
-// Put something in empty folders so they actually go to github, even just readmes
-// rethink how %prot() macros work in terms of directories (currently it's relative to parent of macrolib file, with no way to specify absolute path)
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
 // account for prot files in insert size
 // account for routines in insert size
 // fix case issues: resources and routines get inserted multiple times if referenced with different casing
+// figure out what to do about !1938 (!sprite_load_table)
 
 global using System;
 global using System.Collections.Generic;
@@ -27,8 +23,8 @@ namespace UberASMTool;
 public class Program
 {
     public static string MainDirectory { get; set; }      // this should probably go elsewhere
-    public const int UberMajorVersion = 2;                           // put these somewhere better..take from solution settings?
-    public const int UberMinorVersion = 0;
+    public static readonly int UberMajorVersion = 2;
+    public static readonly int UberMinorVersion = 0;
 
     private static int Main(string[] args)
     {
