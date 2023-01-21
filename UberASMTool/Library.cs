@@ -14,11 +14,9 @@ namespace UberASMTool;
 
 public class LibraryHandler
 {
-    private Dictionary<string, int> labels = new();
-    private List<int> cleans = new();
-
-    public List<int> Cleans => cleans;
     public int Size { get; private set; } = 0;
+
+    private Dictionary<string, int> labels = new();
 
 
     // patches all the library files into the rom and creates the label file all at once
@@ -53,11 +51,9 @@ public class LibraryHandler
                 return false;
             if (!rom.Patch("asm/work/library.asm", null))
                 return false;
-            if (!rom.ProcessPrints(file, out int start, out int end, cleans))
+            if (!rom.ProcessPrints(file, out int start, out int insertSize, true))
                 return false;
-            cleans.Add(start);
 
-            int insertSize = end - start + 8;
             MessageWriter.Write(VerboseLevel.Verbose, $"    Inserted at ${start:X6}");
             MessageWriter.Write(VerboseLevel.Verbose, $"    Insert size: {insertSize} (0x{insertSize:X}) bytes");
             MessageWriter.Write(VerboseLevel.Verbose, "");

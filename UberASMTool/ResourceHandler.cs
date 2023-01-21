@@ -2,11 +2,9 @@ namespace UberASMTool;
 
 public class ResourceHandler
 {
-    private List<Resource> resources = new();
-    private List<int> cleans = new();
-
-    public List<int> Cleans => cleans;
     public int Size { get; private set; }
+
+    private List<Resource> resources = new();
 
     // add a failed flag for resources, so subsequent attempts to use it don't generate more errors
     // consider keeping this as a dictionary as it was before...not a huge difference
@@ -40,7 +38,7 @@ public class ResourceHandler
     {
         foreach (Resource resource in resources)
         {
-            if (!resource.Add(rom, config, cleans))
+            if (!resource.Add(rom, config))
                 return false;
             Size += resource.Size;
         }

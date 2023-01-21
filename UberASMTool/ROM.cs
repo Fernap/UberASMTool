@@ -6,6 +6,9 @@ using AsarCLR;
 
 public class ROM
 {
+    public int ExtraSize { get; private set; } = 0;      // running extra insert size -- prots and shared routines
+    public List<int> Cleans { get; private set; } = new();
+
     private byte[] romData;        // contains the actual ROM data (without the header if there is one)
     private byte[] headerData;     // stays null if ROM is headerless
     private string romPath;
@@ -127,19 +130,25 @@ public class ROM
     }
 
 
-    public bool ProcessPrints(string filename, out int startAddr, out int endAddr, List<int> cleans)
+    public bool ProcessPrints(string filename, out int startAddr, out int size, bool allowNested)
     {
-        bool startl = false;
-        bool endl = false;
+        bool started = false;
+        bool ended = false;
+        size = 0;
         startAddr = 0;
-        endAddr = 0;
+        Stack<int> starts = new();
 
         foreach (string print in Asar.getprints())
         {
+            if (ended)
+            {
+                MessageWriter.Write(VerboseLevel.Quiet, $"  Error: {filename}: Unexpected print after _endl command.");
+                return false;
+            }
+
             string trimmed = print.Trim();        // Not sure if asar prints include newlines, but the Trim() will get rid of them if so
             string command = trimmed;
             int? value = null;
-
             int space = print.IndexOf(' ');
             if (space > 0)
             {
@@ -151,15 +160,9 @@ public class ROM
                 catch { }
             }
 
-            if (!startl && command != "_startl")
+            if (!started && command != "_startl")
             {
-                MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: unexpected print before _startl command.");
-                return false;
-            }
-
-            if (endl)
-            {
-                MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: unexpected print after _endl command.");
+                MessageWriter.Write(VerboseLevel.Quiet, $"  Error: {filename}: Unexpected print before _startl command.");
                 return false;
             }
 
@@ -168,35 +171,69 @@ public class ROM
                 case "_startl":
                     if (value == null)
                     {
-                        MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: invalid value in _startl command.");
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  Error: {filename}: Invalid value in _startl command.");
                         return false;
                     }
-                    startl = true;
-                    startAddr = value.Value;
+
+                    // this is iffy, but we don't want to add the start address to the clean list for the main patch, which disallows nesting
+                    if (allowNested)
+                        Cleans.Add(value.Value);
+
+                    if (!started)
+                    {
+                        started = true;
+                        startAddr = value.Value;
+                    }
+                    else
+                    {
+                        if (!allowNested)
+                        {
+                            MessageWriter.Write(VerboseLevel.Quiet, $"  Error: {filename}: Invalid nested _startl command.  This is most likely from using an uncalled shared routine or a %prot macro in the global code or statusbar files");
+                            return false;
+                        }
+                        else
+                        {
+                            starts.Push(value.Value);
+                        }
+                    }
+
                     break;
 
                 case "_endl":
                     if (value == null)
                     {
-                        MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: invalid value in _endl command.");
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  Error: {filename}: Invalid value in _endl command.");
                         return false;
                     }
-                    endl = true;
-                    endAddr = value.Value;
-                    break;
 
-                case "_prot":
-                    if (cleans == null)
+                    int tmpStart;
+                    int tmpEnd = value.Value;
+                    if (starts.Count == 0)
                     {
-                        MessageWriter.Write(VerboseLevel.Quiet, $"  Invalid use of _prot command.  This is most likely from using %prot_file() or %prot_source() in the global code or status bar files, which is not allowed.");
+                        ended = true;
+                        tmpStart = startAddr;
+                        size = tmpEnd - tmpStart + 8;
+                    }
+                    else
+                        tmpStart = starts.Pop();
+
+                    if (tmpStart == tmpEnd)
+                    {
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  Error: {filename}: Zero insert size.");
                         return false;
                     }
-                    if (value == null)
+                    if (tmpStart > tmpEnd)
                     {
-                        MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: invalid value in _prot command.");
+                        MessageWriter.Write(VerboseLevel.Quiet, $"  Error: {filename}: Negative insert size.");
                         return false;
                     }
-                    cleans.Add(value.Value);
+
+                    if (!ended)
+                    {
+                        MessageWriter.Write(VerboseLevel.Debug, $"  {filename}: routine/prot added, {tmpEnd - tmpStart + 8} bytes");
+                        ExtraSize += tmpEnd - tmpStart + 8;
+                    }
+
                     break;
 
                 default:
@@ -205,15 +242,9 @@ public class ROM
             }
         }
 
-        if (!endl)
+        if (!ended)
         {
-            MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: missing _endl command.");
-            return false;
-        }
-
-        if (startAddr == endAddr)
-        {
-            MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: error: empty assembled file.");
+            MessageWriter.Write(VerboseLevel.Quiet, $"  {filename}: Missing _endl command.");
             return false;
         }
 

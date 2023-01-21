@@ -42,10 +42,11 @@ macro UberRoutine(name)
     if not(defined("UberRoutine_<name>"))
         pushpc
         freecode cleaned
-        print "_prot ", pc                  ; not really a prot, but close enough -- this will cause a fail if attempted in global_code or status_code unless already called first
+        print "_startl ", pc
         global #UberRoutine_<name>:
         !UberRoutine_<name> = UberRoutine_<name>
         incsrc "../routines/<name>.asm"     ; this only works so long as macro lib file stays in other/ (or a sibling dir to routines/ at least)
+        print "_endl ", pc
         pullpc
     endif
 
@@ -56,10 +57,11 @@ endmacro
 macro prot_file(file, label)
     pushpc
         freedata cleaned
-        print "_prot ", pc
+        print "_startl ", pc
         
         <label>:
             incbin "../<file>"
+        print "_endl ", pc
     pullpc
 endmacro
 
@@ -67,10 +69,11 @@ endmacro
 macro prot_source(file, label)
     pushpc
         freecode cleaned
-        print "_prot ", pc
+        print "_startl ", pc
         
         <label>:
             incsrc "../<file>"
+        print "_endl ", pc
     pullpc
 endmacro
 

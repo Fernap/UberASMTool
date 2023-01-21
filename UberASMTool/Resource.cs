@@ -76,7 +76,7 @@ public class Resource
     }
 
     // bad name maybe...this patches a resource into the rom and gathers label data and such
-    public bool Add(ROM rom, UberConfig config, List<int> cleans)
+    public bool Add(ROM rom, UberConfig config)
     {
         Dictionary<string, string> labelDefines = new();
 
@@ -91,11 +91,10 @@ public class Resource
 
         if (!rom.Patch("asm/work/resource.asm", labelDefines))
             return false;
-        if (!rom.ProcessPrints(Filename, out int start, out int end, cleans))
+        if (!rom.ProcessPrints(Filename, out int start, out int insertSize, true))
             return false;
-        cleans.Add(start);
 
-        Size = end - start + 8;
+        Size = insertSize;
         MessageWriter.Write(VerboseLevel.Verbose, $"  Inserted at ${start:X6}");
         MessageWriter.Write(VerboseLevel.Verbose, $"  Insert size: {Size} (0x{Size:X}) bytes");
         MessageWriter.Write(VerboseLevel.Verbose, "");

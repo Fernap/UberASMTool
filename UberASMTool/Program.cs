@@ -5,8 +5,6 @@
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
-// account for prot files in insert size
-// account for routines in insert size
 // fix case issues: resources and routines get inserted multiple times if referenced with different casing
 // figure out what to do about !1938 (!sprite_load_table)
 
@@ -89,10 +87,9 @@ public class Program
         MessageWriter.Write(VerboseLevel.Normal, "Building main patch...");
         config.AddNMIDefines(rom);
         if (!config.GenerateCallFile()) { Abort(); return 1; }
-        if (!GeneratePointerListFile(lib, resourceHandler)) { Abort(); return 1; }
+        if (!GeneratePointerListFile(rom)) { Abort(); return 1; }
         if (!rom.Patch("asm/base/main.asm", null)) { Abort(); return 1; }
-        if (!rom.ProcessPrints("asm/base/main.asm", out int start, out int end, null)) { Abort(); return 1; }
-        int mainSize = end - start + 8;
+        if (!rom.ProcessPrints("asm/base/main.asm", out _, out int mainSize, false)) { Abort(); return 1; }
 
         if (!rom.Save())
         { 
@@ -104,7 +101,8 @@ public class Program
         MessageWriter.Write(VerboseLevel.Verbose, $"  Main patch insert size: {mainSize} bytes.");
         MessageWriter.Write(VerboseLevel.Verbose, $"  Library insert size: {lib.Size} bytes.");
         MessageWriter.Write(VerboseLevel.Verbose, $"  Resource insert size: {resourceHandler.Size} bytes.");
-        MessageWriter.Write(VerboseLevel.Normal,  $"  Total insert size: {mainSize + lib.Size + resourceHandler.Size} bytes.");
+        MessageWriter.Write(VerboseLevel.Verbose, $"  Other (routines and prots) insert size: {rom.ExtraSize} bytes.");
+        MessageWriter.Write(VerboseLevel.Normal,  $"  Total insert size: {mainSize + lib.Size + resourceHandler.Size + rom.ExtraSize} bytes.");
 
         MessageWriter.Write(VerboseLevel.Normal, "");
         MessageWriter.Write(VerboseLevel.Normal, "All code inserted successfully.");
@@ -147,11 +145,11 @@ public class Program
     // this doesn't really fit anywhere else
     // maybe in ROM, but ehh
 
-    private static bool GeneratePointerListFile(LibraryHandler lib, ResourceHandler res)
+    private static bool GeneratePointerListFile(ROM rom)
     {
         var output = new StringBuilder();
 
-        foreach (int addr in lib.Cleans.Concat(res.Cleans))
+        foreach (int addr in rom.Cleans)
             output.AppendLine($"dl ${addr:X6}");
 
         return FileUtils.TryWriteFile("asm/work/pointer_list.asm", output.ToString());
