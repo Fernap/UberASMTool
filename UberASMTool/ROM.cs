@@ -113,11 +113,11 @@ public class ROM
 
         // this will throw an exception if there's a duplicate key
         // shouldn't happen currently, but this may or may not be preferable to letting extraDefines override defines
-        allDefines = extraDefines == null ? defines : defines.Concat(extraDefines).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);   // ew
+        if (extraDefines == null)
+            allDefines = defines;
+        else
+            allDefines = defines.Concat(extraDefines).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);   // ew
 
-if (extraDefines != null)
-foreach (var kvp in extraDefines)
-    Console.WriteLine($"!{kvp.Key} = {kvp.Value}");
         bool status = Asar.patch(Path.Combine(Program.MainDirectory, asmfile), ref romData, null, true, allDefines);
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
