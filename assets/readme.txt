@@ -466,10 +466,10 @@ section for more information.
 -                         The DBR                                   -
 ---------------------------------------------------------------------
 
-By default, UAT sets the DBR to the appropriate bank when calling resource
-code for labels other than nmi:.  This behavior is often not needed, and
-can be turned off for a resource if its .asm file contains the exact line
-(starting at column 1 even)
+By default, UAT sets the DBR (data bank register) to the appropriate bank
+when calling resource code for labels other than nmi:.  This behavior is
+often not needed, and can be turned off for a resource if its .asm file
+contains the exact line (starting at column 1 even)
 
 ;>dbr off
 
@@ -764,13 +764,37 @@ There are some extra things to consider when running NMI code on an SA-1
 ROM.  See the "NMI" section for more detail, and the "Extra Bytes" section
 if making a resource that needs to access extra bytes during NMI.
 
+As of version 2.0, you can now also specify that UberASM Tool should run
+resource labels on the SA-1 CPU if it's available (i.e., it's safe to use
+this option on all ROMs -- it simply does nothing on non-SA-1 ROMs).  This
+works for any resource labels except "nmi:" -- it will always be run on the
+SNES side.  To do so, have a line in the resource .asm file exactly of the
+form:
+
+;>sa1 <comma separated list of labels>
+
+with no extra spaces.  For example, if a resource file contains the line
+
+;>sa1 main,end
+
+then SA-1 ROMs will have "main:" and "end:" run on SA-1, while "init:" and
+"load:" (if present) will run on the SNES side.  Since older versions of
+UberASM Tool don't support this feature, consider using
+%require_uber_version(2, 0) here, especially if you have code that won't
+work properly without the SA-1 CPU being invoked as expected (such as when
+using the multiplication and division registers).  Also keep in mind that
+there's some overhead in invoking the SA-1 CPU, so it may not be worth it
+for very short routines.  The DBR will still be set by default, unless
+the resource file also contains ";>dbr off".  See "The DBR" section for
+more information.
+
 ---------------------------------------------------------------------
 -                         Dos and Don'ts                            -
 ---------------------------------------------------------------------
 
 Just a few random reminders for good practice when making resources:
 
-- UAT turns on global namespaces for resources and libraries; DON'T turn
+- UAT turns on nested namespaces for resources and libraries; DON'T turn
 them off.  And if you do set a namespace in your code somewhere, DO make
 sure to exit it as well
 
@@ -780,7 +804,9 @@ file to be applied with Asar directly.
 
 - DO %require_uber_ver(2,0) if your resource uses extra bytes.  Failing
 to do so will let someone add it with version 1.x appear to add it, but
-it won't work correctly due to lack of extra byte support.
+it won't work correctly due to lack of extra byte support.  Consider
+including this even for features that will explicitly fail on older
+versions.  This helps the user know quickly that they need to upgrade.
 
 =============================================================================
 

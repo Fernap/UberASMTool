@@ -51,7 +51,7 @@ public class LibraryHandler
 
             if (!FileUtils.TryWriteFile("asm/work/library.asm", output))
                 return false;
-            if (!rom.Patch("asm/work/library.asm"))
+            if (!rom.Patch("asm/work/library.asm", null))
                 return false;
             if (!rom.ProcessPrints(file, out int start, out int end, cleans))
                 return false;

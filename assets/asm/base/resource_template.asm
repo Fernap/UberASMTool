@@ -28,20 +28,58 @@ macro UberResource(filename, setdbr)
 
     namespace Inner
 
-    ResourceEntry:
-        if <setdbr>
-            phk
-            plb
-        endif
-        lda $06,S
-        tax
-        jmp (ResourceLabels,x)
+    if !sa1
+            
+        ResourceEntry:
+            lda $06,S
+            tax
+            lda.l SA1Labels,x
+            beq .NotSA1
+            stx $03
+            %invoke_sa1(.SA1)
+            rtl
+
+        .SA1:
+            if <setdbr>
+                phk
+                plb
+            endif
+            ldx $03
+            jmp (ResourceLabels,x)
+
+        .NotSA1:
+            if <setdbr>
+                phk
+                plb
+            endif
+            jmp (ResourceLabels,x)
+
+    else
+
+        ResourceEntry:
+            if <setdbr>
+                phk
+                plb
+            endif
+            lda $06,S
+            tax
+            jmp (ResourceLabels,x)
+
+    endif
 
     ResourceLabels:
         dw init
         dw main
         dw end
         dw load
+
+    if !sa1
+        SA1Labels:
+            dw !InvokeSA1init
+            dw !InvokeSA1main
+            dw !InvokeSA1end
+            dw !InvokeSA1load
+    endif
 
     incsrc "<filename>"
 

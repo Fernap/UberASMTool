@@ -100,18 +100,14 @@ public class UberConfig
         return;
     }
 
-    public bool GenerateExtraBytesFile(Resource resource)
+    public void GenerateExtraBytes(Resource resource, StringBuilder output)
     {
-        var output = new StringBuilder();
-
         if (resource.NumBytes > 0)
         {
             levelContext.GenerateExtraBytes(output, resource);
             gamemodeContext.GenerateExtraBytes(output, resource);
             overworldContext.GenerateExtraBytes(output, resource);
         }
-
-        return FileUtils.TryWriteFile("asm/work/extra_bytes.asm", output.ToString());
     }
 
     public bool GenerateCallFile()

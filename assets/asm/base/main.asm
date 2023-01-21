@@ -98,7 +98,7 @@ org $008176
         nop #2
     else
         lda $4210
-        lda $1DFB
+        lda $1DFB|!addr
     endif
 	
 org $008E1A

@@ -22,6 +22,7 @@ Version 2.0 (?):
 * Added a %require_uber_ver() macro to the macro library file that lets a resource fail if the running version of UAT is lower than specified
 * Updated Asar to 1.81
 * Added support for shared routines similar to (but a little different from) Pixi and GPS
+* Added support for the ">sa1" command, which has UAT automatically invoke the SA-1 CPU when calling labels on SA-1 ROMs
 
 Library stuff:
 * If a library file has a label with the same name as the file, UAT no longer exports that label without the filename prefix.  E.g., a library file math.asm with the label math: would previously have had that label exposed simply as "math:", rather than "math_math:" as suggested by the documentation.  This was undocumented behavior and no longer happens.

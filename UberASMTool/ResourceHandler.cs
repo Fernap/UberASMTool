@@ -40,9 +40,7 @@ public class ResourceHandler
     {
         foreach (Resource resource in resources)
         {
-            if (!config.GenerateExtraBytesFile(resource))
-                return false;
-            if (!resource.Add(rom, cleans))
+            if (!resource.Add(rom, config, cleans))
                 return false;
             Size += resource.Size;
         }

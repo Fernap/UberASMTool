@@ -76,7 +76,7 @@ public class Program
         if (!rom.Load(romfile)) { Abort(); return 1; }
 
         MessageWriter.Write(VerboseLevel.Normal, "Cleaning previous runs...");
-        if (!rom.Patch("asm/base/clean.asm")) { Abort(); return 1; }
+        if (!rom.Patch("asm/base/clean.asm", null)) { Abort(); return 1; }
 
         MessageWriter.Write(VerboseLevel.Normal, "Building library...");
         if (!lib.BuildLibrary(rom)) { Abort(); return 1; }
@@ -90,7 +90,7 @@ public class Program
         config.AddNMIDefines(rom);
         if (!config.GenerateCallFile()) { Abort(); return 1; }
         if (!GeneratePointerListFile(lib, resourceHandler)) { Abort(); return 1; }
-        if (!rom.Patch("asm/base/main.asm")) { Abort(); return 1; }
+        if (!rom.Patch("asm/base/main.asm", null)) { Abort(); return 1; }
         if (!rom.ProcessPrints("asm/base/main.asm", out int start, out int end, null)) { Abort(); return 1; }
         int mainSize = end - start + 8;
 

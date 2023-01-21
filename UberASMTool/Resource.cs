@@ -2,6 +2,8 @@ namespace UberASMTool;
 
 public class Resource
 {
+    public static readonly HashSet<string> validLabels = new HashSet<string> { "init", "main", "load", "end" };
+
     public int ID { get; init; }       // each resource gets a unique ID -- starts at 0 and increments for each new resource
     public string Filename { get; init; }
 
@@ -13,7 +15,8 @@ public class Resource
     public int NMIAddress { get; set; }
     public int Size { get; private set; }
 
-    public List<Asarlabel> BytesLabels { get; set; } = new();  // ROM address of the ExtraBytes: sublabels for this resource
+    public HashSet<string> SA1Labels { get; } = new();    // which labels should be invoked with sa1 if possible (via >sa1 command)
+    public List<Asarlabel> BytesLabels { get; } = new();  // ROM address of the ExtraBytes: sublabels for this resource
 
     public Resource(string file, int id)
     {
@@ -54,16 +57,39 @@ public class Resource
             NumBytes = bytes;
         }
 
+        line = Array.Find(lines, x => x.StartsWith(";>sa1 "));
+        if (line != null)
+        {
+            string[] labels = line.Substring(";>sa1 ".Length).Split(',');
+            foreach (string label in labels)
+            {
+                if (!validLabels.Contains(label))
+                {
+                    MessageWriter.Write(VerboseLevel.Quiet, $"Invalid label \"{label}\" in \">sa1\" command in \"{Filename}\".");
+                    return false;
+                }
+                SA1Labels.Add(label);
+            }
+        }
+
         return true;
     }
 
     // bad name maybe...this patches a resource into the rom and gathers label data and such
-    public bool Add(ROM rom, List<int> cleans)
+    public bool Add(ROM rom, UberConfig config, List<int> cleans)
     {
+        Dictionary<string, string> labelDefines = new();
+
         MessageWriter.Write(VerboseLevel.Verbose, $"Adding resource \"{Filename}\"...");
+        if (!GenerateExtraBytesFile(config))
+            return false;
         if (!GenerateResourceFile())
             return false;
-        if (!rom.Patch("asm/work/resource.asm"))
+
+        foreach (string label in validLabels)
+            labelDefines[$"InvokeSA1{label}"] = SA1Labels.Contains(label) ? "1" : "0";
+
+        if (!rom.Patch("asm/work/resource.asm", labelDefines))
             return false;
         if (!rom.ProcessPrints(Filename, out int start, out int end, cleans))
             return false;
@@ -127,5 +153,14 @@ public class Resource
         string output = "incsrc \"../base/resource_template.asm\"" + Environment.NewLine +
                         $"%UberResource(\"{Filename}\", {(SetDBR ? 1 : 0)})" + Environment.NewLine;
         return FileUtils.TryWriteFile("asm/work/resource.asm", output);
+    }
+
+    private bool GenerateExtraBytesFile(UberConfig config)
+    {
+        var output = new StringBuilder();
+
+        config.GenerateExtraBytes(this, output);
+
+        return FileUtils.TryWriteFile("asm/work/extra_bytes.asm", output.ToString());
     }
 }
