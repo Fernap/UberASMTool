@@ -1,3 +1,4 @@
+incsrc "uber_defines.asm"
 incsrc "!MacrolibFile"   ; global defines file
 
 macro UberLibrary(filename, binary)

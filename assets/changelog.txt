@@ -24,6 +24,7 @@ Version 2.0 (?):
 * Added support for shared routines similar to (but a little different from) Pixi and GPS
 * Added support for the ">sa1" command, which has UAT automatically invoke the SA-1 CPU when calling labels on SA-1 ROMs
 * UAT now sets !sprite_load_table based on bit 0 of $0F:FFE0 in the ROM
+* Moved stock defines to asm/base/uber_defines.asm, leaving the macro library file free for any user stuff
 
 Library stuff:
 * If a library file has a label with the same name as the file, UAT no longer exports that label without the filename prefix.  E.g., a library file math.asm with the label math: would previously have had that label exposed simply as "math:", rather than "math_math:" as suggested by the documentation.  This was undocumented behavior and no longer happens.

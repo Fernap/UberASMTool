@@ -372,10 +372,10 @@ around this, you can either rerun UberASM Tool after Pixi, or add the line
 
 !Use255SpritesPerLevel = 1
 
-to the file "other/macro_library.asm" immediately after the if/else/endif
-which sets it.  Note that the sprite load table defines in versions of
-UberASM prior to 2.0 simply didn't account for the remap possibility, and
-would have likely failed in this case anyway.
+to the your macro library file ("other/macro_library.asm" by default).
+Note that the sprite load table defines in versions of UberASM Tool prior
+to 2.0 simply didn't account for the remap possibility, and would have
+likely failed in this case anyway.
 
 
 
@@ -700,9 +700,11 @@ file by using %UberResource(FindFreeSpriteSlot).
 -                         Other Code Files                          -
 ---------------------------------------------------------------------
 
-The macro library file (given by macrolib: in the list file) contains
-common defines and macros you may want to use.  You can add defines and
-macros here for yourself if you wish.  Some pre-existing macros of note:
+The macro library file (given by macrolib: in the list file) is included
+every file assembled by UberASM Tool -- resources, libraries, routines.  If
+you wish, you can place common defines and macros here.  Previous versions
+also put standard defines and macros here, but those have now been split
+out into "asm/base/uber_defines.asm".  Some pre-existing macros of note:
 
 - %require_uber_ver(major, minor) -- Fail if the current version of UberASM
 Tool is less than major.minor.  This will also cause a resource to fail on
@@ -711,12 +713,12 @@ useful for files with extra bytes since they'll appear to insert with older
 versions, but not work correctly due to the extra bytes not being passed.
 
 - %invoke_sa1(label) -- useful if you want to run some code on the SA-1
-CPU; see the "SA-1" section for more detail
+CPU; see the "SA-1" section for more detail.
 
 - %prot_file(file, label) / %prot_source(file, label) -- these include
 binary and source files respectively at the given label, but puts them in
 their own freedata/freecode blocks, especially useful for large binary
-files
+files.
 
 The global code file (given by global: in the list file) has its "init:"
 label called by UberASM Tool fairly early in SMW's overall initailization.

@@ -11,6 +11,7 @@
 
 namespace nested on
 
+incsrc "uber_defines.asm"
 incsrc "!MacrolibFile"
 incsrc "../work/library_labels.asm"
 incsrc "../work/resource_labels.asm"
