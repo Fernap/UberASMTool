@@ -361,6 +361,22 @@ older versions from working correctly.  Also note that versions 1.x make no
 such check and will attempt to run anyway.  As of 2.0, it should still work
 properly, but again, this may change in the future.
 
+---
+
+Resources wanting to access the sprite load table (unlikely, but possible)
+need to know if it's been remapped by Pixi.  UberASM Tool looks to see if
+Pixi has marked it so and sets some defines appropriately.  However, if
+Pixi has not been run yet (or it's an old version), then UberASM Tool will
+assume the remap hasn't happened, when in fact it might be later.  To work
+around this, you can either rerun UberASM Tool after Pixi, or add the line
+
+!Use255SpritesPerLevel = 1
+
+to the file "other/macro_library.asm" immediately after the if/else/endif
+which sets it.  Note that the sprite load table defines in versions of
+UberASM prior to 2.0 simply didn't account for the remap possibility, and
+would have likely failed in this case anyway.
+
 
 
 -----------------------------------------------------------------------------

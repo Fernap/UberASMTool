@@ -26,6 +26,13 @@ else
     lorom
 endif
 
+; If using an old version of Pixi, or it hasn't been run yet and you know it will be later, you can override this
+if read1($0FFFE0)&$01 == $01
+    !Has255SpritesPerLevel = 0
+else
+    !Has255SpritesPerLevel = 1
+endif
+
 !EXLEVEL = 0
 if (((read1($0FF0B4)-'0')*100)+((read1($0FF0B4+2)-'0')*10)+(read1($0FF0B4+3)-'0')) > 253
 	!EXLEVEL = 1
@@ -136,6 +143,8 @@ macro define_base2_address(name, addr)
     endif
 endmacro
 
+; Regular sprite defines -------------------------------------------
+
 %define_sprite_table("7FAB10",$7FAB10,$400040)
 %define_sprite_table("7FAB1C",$7FAB1C,$400056)
 %define_sprite_table("7FAB28",$7FAB28,$400057)
@@ -199,7 +208,6 @@ endmacro
 %define_sprite_table(sprite_tweaker_1686, $1686, $762C)
 %define_sprite_table(sprite_off_screen_vert, $186C, $7642)
 %define_sprite_table(sprite_misc_187b, $187B, $3410)
-%define_sprite_table(sprite_load_table, $1938, $418A00)
 %define_sprite_table(sprite_tweaker_190f, $190F, $7658)
 %define_sprite_table(sprite_misc_1fd6, $1FD6, $766E)
 %define_sprite_table(sprite_cape_disable_time, $1FE2, $7FD6)
@@ -250,11 +258,20 @@ endmacro
 %define_sprite_table("186C", $186C, $7642)
 %define_sprite_table("187B", $187B, $3410)
 %define_sprite_table("190F", $190F, $7658)
-%define_sprite_table("1938", $1938, $418A00)
 %define_sprite_table("1FD6", $1FD6, $766E)
 %define_sprite_table("1FE2", $1FE2, $7FD6)
 
-;extended defines
+if !Has255SpritesPerLevel
+    %define_sprite_table("1938", $7FAF00, $418A00)
+    %define_sprite_table("7FAF00", $7FAF00, $418A00)
+    %define_sprite_table(sprite_load_table, $7FAF00, $418A00)
+else
+    %define_sprite_table("1938", $1938, $418A00)
+    %define_sprite_table(sprite_load_table, $1938, $418A00)
+endif
+
+; Extended sprite defines -----------------------------------------
+
 !ExtendedOffset = $13
 
 %define_base2_address(extended_num,$170B)
