@@ -86,7 +86,8 @@ public class LibraryHandler
                 continue;
             if (label.Name.StartsWith("UberRoutine_"))
             {
-                rom.AddDefine(label.Name, $"${label.Location:X6}");
+                if (!rom.AddRoutine(file, label.Name.Substring("UberRoutine_".Length), label.Location))
+                    return false;
                 continue;
             }
             if (!AddLabel($"{prefix}_{label.Name}", label.Location))

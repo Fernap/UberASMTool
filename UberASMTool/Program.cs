@@ -5,7 +5,7 @@
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
-// fix case issues: resources and routines get inserted multiple times if referenced with different casing
+// fix case issues: resources get inserted multiple times if referenced with different casing
 // figure out what to do about !1938 (!sprite_load_table)
 
 global using System;
@@ -75,6 +75,9 @@ public class Program
 
         MessageWriter.Write(VerboseLevel.Normal, "Cleaning previous runs...");
         if (!rom.Patch("asm/base/clean.asm", null)) { Abort(); return 1; }
+
+        MessageWriter.Write(VerboseLevel.Normal, "Scanning for shared routines...");
+        if (!rom.ScanRoutines()) { Abort(); return 1; }
 
         MessageWriter.Write(VerboseLevel.Normal, "Building library...");
         if (!lib.BuildLibrary(rom)) { Abort(); return 1; }

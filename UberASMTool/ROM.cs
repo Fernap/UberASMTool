@@ -14,6 +14,7 @@ public class ROM
     private string romPath;
     private int romSize;
     private Dictionary<string, string> defines = new();
+    private HashSet<string> routines = new();
 
     // Add a define -- not implementing a way to remove, and not checking for duplicate keys
     // don't really need anything fancier
@@ -21,6 +22,37 @@ public class ROM
     {
         MessageWriter.Write(VerboseLevel.Debug, $"Define added: !{define} = {value}");
         defines[define] = value;
+    }
+
+    public bool ScanRoutines()
+    {
+        string[] files;
+        try
+        {
+            files = Directory.GetFiles("routines", "*.asm");
+        }
+        catch
+        {
+            MessageWriter.Write(VerboseLevel.Quiet, "Could not read contents of routines/ directory.");
+            return false;
+        }
+
+        foreach (string file in files)
+            routines.Add(Path.GetFileNameWithoutExtension(file));
+
+        return true;
+    }
+
+    public bool AddRoutine(string filename, string name, int location)
+    {
+        if (!routines.Contains(name))
+        {
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error: {filename}: Unknown shared routine \"{name}\".");
+            return false;
+        }    
+
+        AddDefine($"UberRoutine_{name}", $"${location:X6}");
+        return true;
     }
 
     public bool Load(string filename)

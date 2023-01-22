@@ -121,7 +121,8 @@ public class Resource
         foreach (Asarlabel label in labels)
         {
             if (label.Name.StartsWith("UberRoutine_") && !label.Name.Contains(':'))
-                rom.AddDefine(label.Name, $"${label.Location:X6}");
+                if (!rom.AddRoutine(Filename, label.Name.Substring("UberRoutine_".Length), label.Location))
+                    return false;
             if (label.Name.StartsWith("Inner_ExtraBytes"))
                 BytesLabels.Add(new Asarlabel { Name = label.Name.Substring("Inner_".Length), Location = label.Location });
         }
