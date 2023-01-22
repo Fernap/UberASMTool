@@ -6,16 +6,17 @@ public class ResourceHandler
 
     private List<Resource> resources = new();
 
-    // add a failed flag for resources, so subsequent attempts to use it don't generate more errors
-    // consider keeping this as a dictionary as it was before...not a huge difference
-    // file - full filename of the resource
     // this puts the resource associated to file into the resource parameter,
     // if already loaded, it will use that, if not, it will try to load it
-    // passes along an exception if the file couldn't be read
+    // file - full filename of the resource
     // returns false on other errors
+    // passes along an exception if the file couldn't be read
     public bool GetOrAddResource(string file, out Resource resource, ROM rom)
     {
-        resource = resources.Find(x => x.Filename == file);
+        // This is kind of an ugly hack to prevent resources specified with different casing to be inserted multiple times.
+        // The upshot is that the first invocation uses the case sensitivity of the underlying file system, while
+        //   subsequent invocations are case-insensitive and will match any previous invocations.
+        resource = resources.Find(x => x.Filename.ToLower() == file.ToLower());
         if (resource != null)
             return true;
 
@@ -46,7 +47,6 @@ public class ResourceHandler
         if (resources.Count > 0)
             MessageWriter.Write(VerboseLevel.Normal, $"  Processed {resources.Count} resource file(s).");
 
-        // print something probably
         return true;
     }
 
