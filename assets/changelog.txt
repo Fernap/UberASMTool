@@ -1,47 +1,43 @@
 ---------------------------------------------------------------------
 -                         Version History                           -
 ---------------------------------------------------------------------
-Version 2.0 (?):
+
+Version 2.0 (beta):
 
 (fernap:)
-* Removed spriteASM feature; it had been broken for a long time, and appears that no one was using it (resolves issue #27)
-    * As such, the "sprite:" and "sprite-sa1:" declarations in the list.txt files have been deprecated (using these will result in an error).  Instead, there is now a required "freeram:" command, which specifies 2 bytes of freeram, rather than the 38 or 68 previously.
-* Added support for multiple files per level/gamemode/overworld (implments issue #5, moots issue #22)
-* Added support for a special "*" level/gamemode/overworld number; files added under this number will always run, as if they had been added under every level/gamemode/overworld individually (partially resolves issue #26)
-* Added an "end:" label for level/gamemode/overworld code that will be run at the end of a frame (resolves the rest of issue #26)
-    * This is implemented for levels with a new hijack at $00A2EE (this conflicts with with https://www.smwcentral.net/?p=section&a=details&id=12574, SMA2 Slide Kill Chain by GHB, see the readme for more info)
-    * The modification to overworld code causes a conflict with https://www.smwcentral.net/?p=section&a=details&id=19763, lx5's nsmb star coin patch, see readme for more info.
-* Removed "main:", "load:", and "nmi:" labels from the global code file ("init:" still remains)
-    * This rendered the hijack at $00806F useless, which has now been removed...applying UAT will restore the original game code here
-    * load: code can be achieved with a file with the load: label running in level *
-    * nmi: code can be done with a file with the nmi: label running in gamemode *
-    * main: code can be done with a file running in gamemode *.  See the readme for more info (specifically note to use a combined init: and main: routine to make sure it runs on every frame instead of skipping the first, and note that the CLI : INC $13 happens before instead of after)
-* Added support for resources to have extra bytes (implements issue #10)
-* Resource files can now include the exact line ";>dbr off" to tell UAT not to set the DBR when calling labels in that resource.  Otherwise, it will set the DBR when calling any resource labels, except for nmi: .  This was the default behavior of previous versions.
-* Added "quiet" and "debug" verbose levels
-* Added a %require_uber_ver() macro to the macro library file that lets a resource fail if the running version of UAT is lower than specified
-* Updated Asar to 1.81
-* Added support for shared routines similar to (but a little different from) Pixi and GPS
-* Added support for the ">sa1" command, which has UAT automatically invoke the SA-1 CPU when calling labels on SA-1 ROMs
-* UAT now sets !sprite_load_table based on bit 0 of $0F:FFE0 in the ROM
-* Moved stock defines to asm/base/uber_defines.asm, leaving the macro library file free for any user stuff
-
-Library stuff:
-* If a library file has a label with the same name as the file, UAT no longer exports that label without the filename prefix.  E.g., a library file math.asm with the label math: would previously have had that label exposed simply as "math:", rather than "math_math:" as suggested by the documentation.  This was undocumented behavior and no longer happens.
-* Verbose info for library files no longer includes the PC address of the insertion location, just the SNES address
-
-* Fixed issue #28 (crash when switching to a custom gamemode)
-* Fixed issue #23 (macrolib file not available for global code)
-* Fixed issue #29 (same filename in different folder type wouldn't work...foo.asm in level/ and overworld/ eg)
-* Fixed issue #25 (UAT will now return 1 on error and 0 on success)
-* Added a hijack of the 12 bytes of unused space at $01CD1E; this now consists of 4 bytes of "UBER", then one byte for the major version number of UAT that was used, and one byte for the minor version number (currently 2.0); the last 6 bytes are set to 0, but reserved for future use
-* UAT will refuse to run on a ROM that had a later version of UAT applied (see readme for how to override this)
-* Added a missing "nop" to the hijack at $00A5EE
-* Rewrote the list.txt parser using Pidgin (https://github.com/benjamin-hodgson/Pidgin) to accommodate the new stuff
-* Removed the path list passed to Asar when patching files.  Any incsrc/incbin should be relative to the calling file's location (absolute paths may also be given).  With this in mind, issue #20 should be closed
-* Issue #19 probably isn't an issue anymore...probably stemmed from copying contents of asm files and then replacing filename in the error messages manually
-
-* Lots of other behind-the-scenes updates and rewrites
+- Removed spriteASM feature; it had been broken for a long time, and appears that no one was using it (resolves issue #27)
+    - As such, the "sprite:" and "sprite-sa1:" declarations in the list.txt files have been deprecated (using these will result in an error).  Instead, there is now a required "freeram:" command, which specifies 2 bytes of freeram, rather than the 38 or 68 previously.
+- Added support for multiple files per level/gamemode/overworld (implments issue #5, moots issue #22)
+- Added support for a special "*" level/gamemode/overworld number; files added under this number will always run, as if they had been added under every level/gamemode/overworld individually (partially resolves issue #26)
+- Added an "end:" label for level/gamemode/overworld code that will be run at the end of a frame (resolves the rest of issue #26)
+    - This is implemented for levels with a new hijack at $00A2EE (this conflicts with with https://www.smwcentral.net/?p=section&a=details&id=12574, SMA2 Slide Kill Chain by HammerBrother, see the incompatibilities.txt for more info)
+    - The modification to overworld code causes a conflict with https://www.smwcentral.net/?p=section&a=details&id=19763, lx5's nsmb star coin patch, see incompatibilities.txt for more info.
+- Removed "main:", "load:", and "nmi:" labels from the global code file ("init:" still remains)
+    - This rendered the hijack at $00806F useless, which has now been removed...applying UAT will restore the original game code here
+    - See the readme for equivalent functionality using the new features
+- Added support for resources to have extra bytes (implements issue #10)
+- Resource files can now include the exact line ";>dbr off" to tell UAT not to set the DBR when calling labels in that resource.  Otherwise, it will set the DBR when calling any resource labels, except for nmi: .  This was the default behavior of previous versions.
+- Added "quiet" and "debug" verbose levels
+- Added a %require_uber_ver() macro to the macro library file that lets a resource fail if the running version of UAT is lower than specified
+- Updated Asar to 1.81
+- Added support for shared routines similar to (but a little different from) Pixi and GPS
+- Added support for the ">sa1" command, which has UAT automatically invoke the SA-1 CPU when calling labels on SA-1 ROMs
+- UAT now sets !sprite_load_table based on bit 0 of $0F:FFE0 in the ROM
+- Moved stock defines to asm/base/uber_defines.asm, leaving the macro library file free for any user stuff
+- If a library file has a label with the same name as the file, UAT no longer exports that label without the filename prefix.  E.g., a library file math.asm with the label math: would previously have had that label exposed simply as "math:", rather than "math_math:" as suggested by the documentation.  This was undocumented behavior and no longer happens.
+- Verbose info for library files no longer includes the PC address of the insertion location, just the SNES address
+- Fixed issue #28 (crash when switching to a custom gamemode)
+- Fixed issue #23 (macrolib file not available for global code)
+- Fixed issue #29 (same filename in different folder type wouldn't work...foo.asm in level/ and overworld/ eg)
+- UAT no longer includes the same file twice when specified with different capitalization in list.txt
+- Fixed issue #25 (UAT will now return 1 on error and 0 on success)
+- Added a hijack of the 12 bytes of unused space at $01CD1E; this now consists of 4 bytes of "UBER", then one byte for the major version number of UAT that was used, and one byte for the minor version number (currently 2.0); the last 6 bytes are set to 0, but reserved for future use
+- UAT will refuse to run on a ROM that had a later version of UAT applied (see readme for how to override this)
+- Added a missing "nop" to the hijack at $00A5EE
+- Rewrote the list.txt parser using Pidgin (https://github.com/benjamin-hodgson/Pidgin) to accommodate the new stuff
+- Removed the path list passed to Asar when patching files.  Any incsrc/incbin should be relative to the calling file's location (absolute paths may also be given).  With this in mind, issue #20 should be closed
+- Issue #19 probably isn't an issue anymore...probably stemmed from copying contents of asm files and then replacing filename in the error messages manually
+- Lots of other behind-the-scenes updates and rewrites
 
 
 Version 1.5:

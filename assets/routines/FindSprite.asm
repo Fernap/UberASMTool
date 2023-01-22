@@ -6,7 +6,7 @@
 ;          if carry bit set, custom sprite number
 ;
 ; Output:
-;     X : sprite slot containing the sprite, or $FF is not found
+;     X : sprite slot containing the sprite (which might be in a dead state), or $FF is not found
 ;     Carry bit clear if found, carry bit set if not found
 
 ?main:

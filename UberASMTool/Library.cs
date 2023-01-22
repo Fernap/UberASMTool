@@ -1,15 +1,3 @@
-// label exporting sucks --
-// "foo/bar.asm" and "foo bar.asm" will share the same prefix
-// (disallowing spaces in filenames would solve some problems)
-// (underscores in filenames would have the exact same problem)
-// "foo/bar.asm"'s prefix (foo_bar) will start with "foo.asm"'s prefix (foo)
-// only way to stop this is to just export top-level labels (without underscores)
-// you'd still get "bar:" in foo.asm clashing with "foo/bar.asm"'s auto-top label (those can be removed, which would mean still error on no label)
-// even still, bar: in foo.asm would clash with /foo/bar.bin (binary files strip extensions)
-// fuck it, just check for duplicates and move on with life I guess
-
-using AsarCLR;
-
 namespace UberASMTool;
 
 public class LibraryHandler
@@ -120,7 +108,6 @@ public class LibraryHandler
     {
         var output = new StringBuilder();
 
-    // TODO: add subdir and spaces changing to undescores in doc
         foreach (KeyValuePair<string, int> label in labels)
             output.AppendLine($"{label.Key} = ${label.Value:X6}");
 

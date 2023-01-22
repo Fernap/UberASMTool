@@ -1,11 +1,4 @@
-; Consider putting nmi in a separate freecode block
-; since NMI stuff is getting completely separate tables, don't need the nmi entry in the resource entry jump table,
-;    so double check all the code that calls the entry point
-
-; look through all these hijacks and see if I don't want to autoclean some of them because of hijack conflicts
-; this is the main patch which inserts hijacks and includes the other main parts
-
-;The levelnum stuff might be outdated...look into that
+;Since LM implements levelnum, do we still need it?
 
 ;--------------------------------------------------------------------------------------
 
@@ -16,7 +9,7 @@ incsrc "!MacrolibFile"
 incsrc "../work/library_labels.asm"
 incsrc "../work/resource_labels.asm"
 
-!level         = $010B|!addr    ;Patches rely on this, changing this is bad. Don't.
+!level         = $010B|!addr    ;Patches rely on this, changing this is bad.
 !previous_mode = !UberFreeram
 
 ORG $05D8B7

@@ -1,17 +1,5 @@
 namespace UberASMTool;
 
-//public class ResourceCall
-//{
-//    public string File { get; set; }
-//    public List<int> Bytes { get; set; }
-//}
-
-// but I want resourcecall to just have a Resource member, not the file
-
-// add an enum that holds context type and a static method that translates that to a string
-// and simplify stuff in terms of that
-
-// ehhhhhhh maybe not
 public enum UberContextType { None, Level, Gamemode, Overworld }
 
 // collects all the members of a context together

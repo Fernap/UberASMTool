@@ -18,7 +18,7 @@ namespace UberASMTool;
 
 public class Program
 {
-    public static string MainDirectory { get; set; }      // this should probably go elsewhere
+    public static string MainDirectory { get; set; }
     public static readonly int UberMajorVersion = 2;
     public static readonly int UberMinorVersion = 0;
 

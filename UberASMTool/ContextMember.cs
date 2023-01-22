@@ -3,13 +3,12 @@ namespace UberASMTool;
 // holds the info for a single invocation of a resource obtained from list.txt
 public class ResourceCall
 {
-    public Resource ToCall { get; init; }         // names suck
+    public Resource ToCall { get; init; }
     public List<int> Bytes { get; init; }
 }
 
 
 // keeps information about what resources are called for a particular context member (ie, level/ow/gm)
-// add fields for type and which and a 
 public class ContextMember
 {
     private List<ResourceCall> calls { get; set; } = new();
@@ -41,7 +40,7 @@ public class ContextMember
         output.AppendLine();
     }
 
-    // probably set type/which at construction time
+    // might be better to set/keep type/which at construction time rather than passing it in
     public void GenerateCalls(StringBuilder output, bool nmi, string type, string which)
     {
         foreach (ResourceCall call in calls)

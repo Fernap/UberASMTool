@@ -1,14 +1,23 @@
-; comments removed...this is just for testing
-verbose: on
-rom: SMW.smc
+; UberASM Tool list file.
+; See the readme for detailed information on its format.
 
+; sets verbose level, optional
+verbose: on
+
+; ROM file to use, may be overridden on command line, optional here if so
+rom: smw.smc
+
+; Level resources
 level:
 
+; Overworld resources
 overworld:
 
+; Game mode resources
 gamemode:
 
+; Other code files and free RAM setting.  These don't usually need to be changed.
 global:         other/global_code.asm
 statusbar:      other/status_code.asm
 macrolib:       other/macro_library.asm
-freeram:         $7FAC80   # 2 bytes of free RAM
+freeram:        $7FAC80                    ; 2 bytes of free RAM

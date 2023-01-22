@@ -1,5 +1,3 @@
-// TODO: be smarter about reading/writing to the actual ROM file
-
 namespace UberASMTool;
 
 using AsarCLR;
@@ -136,11 +134,6 @@ public class ROM
     }
 
 
-    //        public static bool patch(string patchLocation, ref byte[] romData, string[] includePaths = null,
-    //            bool shouldReset = true, Dictionary<string, string> additionalDefines = null,
-    //            string stdIncludeFile = null, string stdDefineFile = null)
-
-    // starting out with empty path list...shouldn't really be needed, but can add if needed
     // asmfile is relative to the main directory
     public bool Patch(string asmfile, Dictionary<string, string> extraDefines)
     {
@@ -153,6 +146,7 @@ public class ROM
         else
             allDefines = defines.Concat(extraDefines).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);   // ew
 
+        // passing an empty path list; this should be fine since files aren't being moved before assembly
         bool status = Asar.patch(Path.Combine(Program.MainDirectory, asmfile), ref romData, null, true, allDefines);
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))

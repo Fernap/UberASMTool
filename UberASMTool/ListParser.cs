@@ -1,15 +1,6 @@
-// consider requiring multiple files to be on separate lines (ehh)
-
 // consider requiring quotes for filenames with spaces (and thus not caring about the extension)
 // this would also allow ";" or "#" in filenames, which is nice (but not quotes themselves)
 // a comma in a filename would also need to be quoted
-
-// possible errors I want to look for (everything else working, including no match)
-// - resource statements - (complicated):
-//     invalid level/gamemode/ow first, since this is the default if none of the others match
-//     invalid filename initially or after a comma
-//     missing or invalid extra bytes after ":"
-//     unexpected character after filename (not ":" or ",") or after extra bytes
 
 using Pidgin;
 using static Pidgin.Parser;
@@ -140,12 +131,6 @@ public static class ListParser
         Then(Try(arg).OrFail(err)).
         Before(trim_end);
 
-// should maybe either pass (and check for) a null string to skip that part
-// or just have another version for cmds with no args which only takes one param
-// I think the error message should go into the piece that fails instead of here
-// onoff -> onoff error msg
-// filename() -> bad filename (or separate asm/rom file even)
-// change hex_number to snes_address and put it there
     private static readonly Parser<char, ConfigStatement> verbose_statement =
         cmd("verbose", verbosity, "Invalid argument to \"verbose:\".  Must be \"on\", \"off\", \"quiet\", or \"debug\".").
         Select(b => (ConfigStatement) new VerboseStatement { Verbosity = b });

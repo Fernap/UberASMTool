@@ -1,6 +1,4 @@
 // FIX: need a way to determine if two strings point to the same resource...it does handle interspersed ".." and "."s now, but not case differences
-// TODO: the variable naming in the resource statement handling is pretty gross
-// TODO: passing the config statement to AddResource() just so I can pass it along to ListError() is gross
 
 namespace UberASMTool;
 
