@@ -24,7 +24,7 @@ levels.  This approach offers a good compromise between flexibility and
 ease of managing resources; resources can be added, removed, or applied to
 different levels easily.  You can generally do more things with a dedicated
 patch than with an UberASM resource, but removing a patch or having a patch
-be active only for certain level is generally more difficult.  There's also
+be active only for certain levels is generally more difficult.  There's also
 much less risk of two UberASM resources conflicting with each other than
 there is for two patches.
 
@@ -37,7 +37,9 @@ A. Version 2.0 of UberASM Tool is a signficant update to the program.  If
 you try to run it out of the box with your existing list.txt file, you'll
 notice an error during list processing that the sprite: command is no
 longer supported.  Simply change "sprite:" to "freeram:" in your list.txt,
-and remove the "sprite-sa1:" line.
+and remove the "sprite-sa1:" line.  The way the global code file works
+has also changed.  See the "Common Issues" section below for how to
+convert any any resources that that use this.
 
 Other new features include:
 - Multiple resources per level/overworld/game mode.  No more library
@@ -538,7 +540,7 @@ top.  So for example again, to access the third byte, you can use the code:
 |                           ; current bank                     |
 |     LDY #$02              ; load the offset into Y           |
 |                           ; first byte at offset $00, etc.   |
-|     LDA ($00),y           ; load the accumulator with the    |
+|     LDA ($04,s),y         ; load the accumulator with the    |
 |                           ; extra byte whose offset is in Y  |
 |     ; do something                                           |
 |     ; ...                                                    |
@@ -556,7 +558,7 @@ code as above, you would have something like:
 |     PHK : PLB                       |
 |     LDY #$02                        |
 |     if !sa1                         |
-|         LDA ($04,S),y               |
+|         LDA ($04,s),y               |
 |     else                            |
 |         LDA ($00),y                 |
 |     endif                           |
@@ -567,7 +569,7 @@ code as above, you would have something like:
 
 Note that if you write a resource that uses extra bytes, but someone
 attempts to insert it with an older (1.x) version of UberASM Tool, it will
-still appear to insert correctly, but it won't.  You can use the
+still appear to insert, but it won't work correctly.  You can use the
 %require_uber_ver() macro to cause it to fail to insert in older
 versions; see the "Other Code Files" section for more information.
 
@@ -694,13 +696,13 @@ routines/FindFreeSpriteSlot.asm
 ------------------------------------
 
 You can then call this from any library, resource, or other shared routine
-file by using %UberResource(FindFreeSpriteSlot).
+file by using %UberRoutine(FindFreeSpriteSlot).
 
 ---------------------------------------------------------------------
 -                         Other Code Files                          -
 ---------------------------------------------------------------------
 
-The macro library file (given by macrolib: in the list file) is included
+The macro library file (given by macrolib: in the list file) is included in
 every file assembled by UberASM Tool -- resources, libraries, routines.  If
 you wish, you can place common defines and macros here.  Previous versions
 also put standard defines and macros here, but those have now been split
@@ -738,8 +740,9 @@ here should also end in RTS instead of RTL
 
 Note that unlike regular resources, code for the status bar and global
 code files is included with the main UberASM patch, rather than
-getting their own freecode blocks.  Due to how these are built, you
-also can't use the %prot macros in these.
+getting their own freecode blocks.  Due to how the main patch is built,
+you can't use the %prot macros or shared routines that haven't already
+been called at least once in the global code or status bar code files.
 
 ---------------------------------------------------------------------
 -                         SA-1                                      -
@@ -747,11 +750,11 @@ also can't use the %prot macros in these.
 
 If using UberASM Tool on an SA-1 ROM, note that all resources still run on
 the SNES CPU side by default.  If you want to take advantage of the speed
-boost that the SA-1 CPU offers, the macro library file includes the
-%invoke_sa1(label) macro to run the routine at "label:" on the SA-1 CPU.
-The called routine should end in a JSL, and the DBR is not set
-automatically, so you will have to do so if needed.  To use this in a
-hybrid resource, then, some example code might look like:
+boost that the SA-1 CPU offers, you can use the %invoke_sa1(label) macro to
+run the routine at "label:" on the SA-1 CPU. The called routine should end
+in a JSL, and the DBR is not set automatically, so you will have to do so
+if needed.  To use this in a hybrid resource, then, some example code might
+look like:
 
 --------------------------------------------------------------
 | ; ... main resource code                                   |
@@ -835,6 +838,9 @@ versions.  This helps the user know quickly that they need to upgrade.
 
 UberASM Tool was inspired by GPS, Sprite Tool, edit1754's levelASM tool,
 levelASM+NMI version and 33953YoShI's japanese levelASM tool.
+
+Asar 1.81, currently maintained by RPGHacker: https://github.com/RPGHacker/asar
+Pigin 3.2.0 by Benjamin Hodgson: https://github.com/benjamin-hodgson/Pidgin
 
 Vitor would like to thank:
  - edit1754 for the original LevelASM Tool idea;
