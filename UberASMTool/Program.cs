@@ -62,7 +62,7 @@ public class Program
 
         if (!config.ProcessList(statements, resourceHandler, rom)) { Abort(); return 1; }
 
-        string romfile = (args.Length >= 2) ? args[2] : config.ROMFile;
+        string romfile = (args.Length >= 2) ? args[1] : config.ROMFile;
         if (romfile == null)
         {
             MessageWriter.Write(VerboseLevel.Quiet, "No ROM file specified in list file or on command line.");
