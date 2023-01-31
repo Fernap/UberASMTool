@@ -267,6 +267,14 @@ else
     %define_sprite_table(sprite_load_table, $1938, $418A00)
 endif
 
+; this macro can be called in the macrolib file to force the defines, if needed
+macro Force255SpritesPerLevel()
+    !Has255SpritesPerLevel = 1
+    %define_sprite_table("1938", $7FAF00, $418A00)
+    %define_sprite_table("7FAF00", $7FAF00, $418A00)
+    %define_sprite_table(sprite_load_table, $7FAF00, $418A00)
+endmacro
+
 ; Extended sprite defines -----------------------------------------
 
 !ExtendedOffset = $13
