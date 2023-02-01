@@ -1,72 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿namespace UberASMTool;
 
-namespace UberASMTool
+public static class FileUtils
 {
-    static class FileUtils
+    public static bool TryWriteFile(string file, string text)
     {
-        const int maxAttempts = 1000;
-        const int idleTimeBetweenAttempt = 10;
-
-        public static bool ForceCreate(string fileName, string contents)
+        try
         {
-            for (int i = 0; i < maxAttempts; ++i)
-            {
-                try
-                {
-                    File.WriteAllText(fileName, contents);
-                    return true;
-                }
-                catch
-                {
-                    Thread.Sleep(idleTimeBetweenAttempt);
-                }
-            }
-
+            File.WriteAllText(file, text);
+        }
+        catch (Exception e)
+        {
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error writing file \"{file}\": {e}");
             return false;
         }
+        return true;
+    }
 
-        public static bool ForceDelete(string fileName)
+    public static void DeleteTempFiles()
+    {
+        // there should probably be a separate option for this, but for now, skipping temp file deletion if verbose: debug
+        if (MessageWriter.Verbosity == VerboseLevel.Debug)
+            return;
+
+        string tempDir = Path.Combine(Program.MainDirectory, "asm/work");
+        try
         {
-            if (!File.Exists(fileName))
-            {
-                return true;
-            }
-
-            for (int i = 0; i < maxAttempts; ++i)
-            {
-                try
-                {
-                    File.Delete(fileName);
-                    return true;
-                }
-                catch
-                {
-                    Thread.Sleep(idleTimeBetweenAttempt);
-                }
-            }
-
-            return false;
+            string[] files = Directory.GetFiles(tempDir, "*.asm");
+            foreach (string file in files)
+                File.Delete(file);
         }
-
-        public static int DirectoryDepth(string fileName, string directoryBase)
+        catch (Exception e)
         {
-            string path1 = Path.GetFullPath(directoryBase);
-            string path2 = Path.GetFullPath(fileName);
-            char[] separators = new[] { Path.PathSeparator, Path.AltDirectorySeparatorChar,
-                Path.DirectorySeparatorChar, Path.VolumeSeparatorChar };
-
-            return path2.Substring(path1.Length).Split(separators, StringSplitOptions.RemoveEmptyEntries).Length;
-        }
-
-        public static string FixPath(string fileName, string directoryBase)
-        {
-            int depth = DirectoryDepth(fileName, directoryBase);
-            return String.Join("", Enumerable.Repeat("../", depth));
+            MessageWriter.Write(VerboseLevel.Normal, $"Warning: could not delete temporary files: {e.Message}");
         }
     }
 }

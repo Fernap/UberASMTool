@@ -1,11 +1,9 @@
-ORG $008E1A
-	autoclean JML statusbar_main
-	NOP
+CallStatusbar:
+    jsr StatusbarCode_main
+    lda $1493|!addr
+    ora $9D
+    jml $008E1F|!bank
 
-freecode
-
-	statusbar_main:
-		JSR status_bar_main
-		LDA $1493|!addr
-		ORA $9D
-		JML $008E1F|!bank
+namespace StatusbarCode
+incsrc "!StatusbarCodeFile"
+namespace off

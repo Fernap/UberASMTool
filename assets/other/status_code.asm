@@ -2,4 +2,4 @@
 ; There is no such init or nmi label either.
 
 main:
-	RTS
+    rts

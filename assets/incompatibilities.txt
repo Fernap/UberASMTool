@@ -1,0 +1,47 @@
+As of the 2.0 release of UberASM Tool (UAT), there are a couple incompatible patches.  These may get updated at some point,
+but for now, see below for instructions on making them work with the new version.
+
+------------------------------------------------------------------------------
+
+NSMB Star Coins patch, by lx5
+https://www.smwcentral.net/?p=section&a=details&id=19763
+-------------------
+
+1. Make a new file called StarCoinsUber.asm with the contents:
+
+----------
+incsrc "StarCoinsDefs.asm"
+
+end:
+<copy/paste lines 186-199 from StarCoins.asm>
+        RTL
+
+<copy/paste lines 263-286 from StarCoins.asm>
+-----------
+
+2. Put StarCoinsUber.asm and a copy of StarCoinsDefs.asm into UAT's overworld/ folder
+3. In UAT's list.txt, under the "overworld:" section, add the line "* StarCoinsUber.asm"
+4. In StarCoins.asm:
+     - delete lines 263-286
+     - delete lines 174-200
+     - delete lines 50-51
+
+------------------------------------------------------------------------------
+
+SMA2 Slide Kill Chain, by HammerBrother
+https://www.smwcentral.net/?p=section&a=details&id=12574
+----------------
+
+1. Make a new file SlideKillChainUber.asm with the contents:
+
+--------------
+end:
+<copy/paste lines 62-71 from SlideKillChain.asm>
+        RTL
+--------------
+
+2. Put SlideKillChainUber.asm in UAT's level/ folder
+3. In UAT's list.txt, add the line "* SlideKillChainUber.asm" under the level: section
+4. In SlideKillChain.asm:
+     - delete lines 55-72
+     - delete lines 40-42

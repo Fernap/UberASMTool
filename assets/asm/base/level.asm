@@ -1,97 +1,100 @@
-!level	= $010B|!addr	;Patches rely on this, changing this is bad. Don't.
+macro CallLevelResources(offset)
+    lda #<offset>
+    pha
 
-ORG $05D8B7
-	BRA +
-	NOP #3		;the levelnum patch goes here in many ROMs, just skip over it
-+
-	REP #$30
-	LDA $0E		
-	STA !level
-	ASL		
-	CLC		
-	ADC $0E		
-	TAY		
-	LDA.w $E000,Y
-	STA $65		
-	LDA.w $E001,Y
-	STA $66		
-	LDA.w $E600,Y
-	STA $68		
-	LDA.w $E601,Y
-	STA $69		
-	BRA +
-ORG $05D8E0
-	+
+    %LevelAllJSLs()                ; added by UAT in asm/work/resource_calls.asm
 
-ORG $00A242
-	autoclean JML main
-	NOP
-	
-ORG $00A295
-	NOP #4
+    rep #$30
+    lda !level
+    asl
+    tax
+    lda.l LevelResourcePointers,x  ; these point to the lists-of-jsls
+    sta $00
+    sep #$30
+    ldx #$00
+    jsr (!dp,x)
+    pla
+endmacro
 
-ORG $00A5EE
-        autoclean JML init
-
-freecode
-
+; I'm only keeping one of these to store everything in...(the one before what the hijack at $804E jumps to)
 ;Editing or moving these tables breaks things. don't.
-db "uber"
-level_asm_table:
-level_init_table:
-level_nmi_table:
-level_load_table:
-db "tool"
+;db "uber"
+;level_asm_table:
+;level_init_table:
+;level_nmi_table:
+;level_load_table:
+;db "tool"
 
-main:
-	PHB
-	LDA $13D4|!addr
-	BNE +
-	JSL $7F8000
-+
-	REP #$30
-	LDA !level
-	ASL
-	ADC !level
-	TAX
-	LDA.l level_asm_table,x
-	STA $00
-	LDA.l level_asm_table+1,x
-	JSL run_code		
-	PLB
-	
-	LDA $13D4|!addr
-	BEQ +
-	JML $00A25B|!bank
-+	
-	JML $00A28A|!bank
+; -----------------------------------------------------
 
-init:
-	PHB
-	LDA !level
-	ASL
-	ADC !level
-	TAX
-	LDA.l level_init_table,x
-	STA $00
-	LDA.l level_init_table+1,x
-	JSL run_code
-	PLB
-	
-        PHK
-        PEA.w .return-1
-        PEA $84CE
-        JML $00919B|!bank
+; called with 8-bit A, 16-bit X/Y
+CallLevelLoad:
+    sep #$30
+    phb
+    ; jsr global_load -- removing this call in favor of using *
+
+    %CallLevelResources($06)
+    plb
+
+; return back from hijack
+    rep #$10
+    phk
+    pea .return-1
+    pea $8125-1      ; bank 05
+    jml $0583AC|!bank
+.return:
+    sep #$30
+    jml $058091|!bank
+    
+;--------------------------------------------------
+
+; called with A/X/Y already 16-bit
+CallLevelInit:
+    sep #$30
+    phb
+    %CallLevelResources($00)
+    plb
+
+; return back from hijack -- first instruction back sets A/X/Y back to 8-bit, which we've already done
+; restore clobbered jsr $00919B
+    phk
+    pea .return-1
+    pea $84CF-1
+    jml $00919B|!bank
 .return
-	JML $00A5F3|!bank
-	
-run_code:
-	STA $01
-	PHA
-	PLB
-	PLB
-	SEP #$30
-	JML [!dp]
-	
-null_pointer:
-	RTL
+    jml $00A5F3|!bank
+
+;----------------------------------------------------
+
+CallLevelMain:
+    phb
+
+    ; why is this called first? (the call in the base code later is NOPed out)
+    lda $13D4|!addr
+    bne +
+    jsl $7F8000
++
+
+    %CallLevelResources($02)
+    plb
+
+; return back from hijack
+    lda $13D4|!addr
+    beq +
+    jml $00A25B|!bank
++    
+    jml $00A28A|!bank
+
+;--------------------------------------
+
+CallLevelEnd:
+    sta $1C                 ; restore clobbered
+
+    phb
+    %CallLevelResources($04)
+    plb
+
+; return back from hijack, which just jumps to the OAM prep routine
+
+    jml $008494|!bank
+
