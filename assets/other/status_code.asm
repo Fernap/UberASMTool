@@ -1,5 +1,4 @@
-; Note that since status bar code is just a single file, the code below should return with RTS.
-; There is no such init or nmi label either.
+; The status main routine is included in the same freecode block as the main patch, so it should end with RTS rather than RTL
 
 main:
     rts

@@ -111,7 +111,7 @@ public class Program
         WriteRestoreComment(config.ROMFile, $"{UberMajorVersion}.{UberMinorVersion}");
         FileUtils.DeleteTempFiles();
 
-        // Pause();
+        Pause();
         return 0;
     }
 

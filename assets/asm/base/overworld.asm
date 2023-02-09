@@ -15,8 +15,7 @@ macro CallOverworldResources(offset)
     pla
 endmacro
 
-; I'm only keeping one of these to store everything in...(the one before what the hijack at $804E jumps to)
-;Editing or moving these tables breaks things. don't.
+; This has been removed as of 2.0
 ;db "uber"
 ;level_asm_table:
 ;level_init_table:
@@ -31,7 +30,6 @@ CallOverworldMainEnd:
     %CallOverworldResources($02)
 
 ; call main part of OW routine, taking care to invoke the sa-1 side like the sa-1 patch does here
-; if lx5's star coins patch is installed, this will bypass that...it must be converted to use an end: label in an uberasm global overworld file
     if !sa1
         lda #$41 : sta $3180
         lda #$82 : sta $3181

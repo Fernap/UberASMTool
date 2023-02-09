@@ -19,9 +19,6 @@ public class VerboseStatement : ConfigStatement
 public enum FileType { Global, Statusbar, Macrolib, ROM };
 
 // global:, macrolib:, statusbar:, rom:
-// maybe make derived classes for each type that override a description field instead of the switch here
-// yeah, do that, and finish this up with that in mind
-// ehh, does this work?
 public abstract class FileStatement : ConfigStatement
 {
     public string Filename { get; set; }

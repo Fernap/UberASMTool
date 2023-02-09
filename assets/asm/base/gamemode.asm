@@ -15,8 +15,7 @@ macro CallGamemodeResources()
     pla
 endmacro
 
-; I'm only keeping one of these to store everything in...(the one before what the hijack at $804E jumps to)
-;Editing or moving these tables breaks things. don't.
+; This has been removed as of 2.0
 ;db "uber"
 ;level_asm_table:
 ;level_init_table:

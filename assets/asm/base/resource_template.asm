@@ -1,8 +1,8 @@
-;This file is included by a working copy in asm/work, once for each resource
+; This file is included by a working copy in asm/work, once for each resource
 ;
-;Note this sets the DBR (if specified), but doesn't restore it...should be fine as long as the DBR never gets set a bank without low ram mirrors,
-;   which would only happen by a misbehaving bit of code in a high bank or something.
-;It will be explicitly restored after all resources are called
+; Note this sets the DBR (if specified), but doesn't restore it...should be fine as long as the DBR never gets set a bank without low ram mirrors,
+;    which would only happen by a misbehaving bit of code in a high bank or something.
+; It will be explicitly restored after all resources are called
 ;
 ;---------------------------------------
 

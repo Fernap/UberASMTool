@@ -1,4 +1,4 @@
-;Since LM implements levelnum, do we still need it?
+; TODO: look into usefulness of keeping levelnum patch since LM now does it too
 
 ;--------------------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ org $05808C
 
 org $00A5EE
     autoclean jml CallLevelInit
-    nop                             ; this wasn't originally here, but it's a leftover byte of an instruction that can't get called anyway
+    nop                             ; this nop wasn't in 1.x, but it's a leftover byte of an instruction that can't get called anyway
 
 org $00A242
     autoclean jml CallLevelMain
@@ -61,13 +61,11 @@ org $00A242
 org $00A295
     nop #4
 
-; note, this is new to 2.0 (conflicts with https://www.smwcentral.net/?p=section&a=details&id=12574, SMA2 Slide Kill Chain by GHB)
+; new to 2.0
 org $00A2EE
     autoclean jml CallLevelEnd
     nop
 
-; note, will stop lx5's star coin patch from working (https://www.smwcentral.net/?p=section&a=details&id=19763).
-; it will have to be converted
 org $00A1C3
     autoclean jml CallOverworldMainEnd
 	
@@ -75,8 +73,9 @@ org $00A18F
     autoclean jml CallOverworldInit
     nop #2
 
+; handles all of main, init, end
 org $009322
-    autoclean JML CallGamemode       ; handles all of main, init, end
+    autoclean JML CallGamemode
 
 ; this handles both uberasm initializaiton, as well as calling the init: label for the global code file
 org $00804E
@@ -84,8 +83,6 @@ org $00804E
 
 ; this handles the nmi: label for level, overworld, and gamemode resources
 ; it also used to call nmi: for the global code file, but this is no longer used
-; instead, use an nmi: label in a * file for gamemode
-; might want to just not install hijack if nothing uses it..and don't include the nmi patch later too
 org $008176
     if !UberUseNMI == 1
         autoclean jml NMIHijack

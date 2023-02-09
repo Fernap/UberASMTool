@@ -16,8 +16,7 @@ macro CallLevelResources(offset)
     pla
 endmacro
 
-; I'm only keeping one of these to store everything in...(the one before what the hijack at $804E jumps to)
-;Editing or moving these tables breaks things. don't.
+; no longer used as of 2.0, but the existence of this table is used specifically to determine if 1.x is currently patched
 ;db "uber"
 ;level_asm_table:
 ;level_init_table:
@@ -31,7 +30,6 @@ endmacro
 CallLevelLoad:
     sep #$30
     phb
-    ; jsr global_load -- removing this call in favor of using *
 
     %CallLevelResources($06)
     plb
@@ -69,7 +67,7 @@ CallLevelInit:
 CallLevelMain:
     phb
 
-    ; why is this called first? (the call in the base code later is NOPed out)
+    ; TODO: this may wind up calling 7F8000 twice in mode 7 boss fights; check on this
     lda $13D4|!addr
     bne +
     jsl $7F8000

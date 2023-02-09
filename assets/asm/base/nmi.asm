@@ -3,17 +3,6 @@
 ; this preserves/uses/restores 7E:0000-0001 (in WRAM), always
 ; using $00-01 (which is xx:3000-1 in IRAM) is unsafe during lag on sa-1 since both CPUs are running...using WRAM ensures that the sa-1 side can't access it
 
-; I guess I could have a separate entry for NMI that doesn't set DBR, etc?
-; think about this some more
-; note there's no longer nmi: for the global code file
-
-; various defines that UAT needs to set:
-; UberUseNMI - 1 if there's any NMI code to run at all...if not, the NMI hijack is removed and this file isn't even included (this is just a logical OR of the three overall values below)
-; UberGamemodeNMI - 1 if any gamemode code has nmi: labels (this is just a logical OR of the following two values)
-; UberGamemodeNMIAll - 1 if there are any gamemode nmi: labels for files that always run (i.e., with *)
-; UberGamemodeNMINormal - 1 if there are any gamemode nmi: labels for specific gamemodes rather than global
-; ditto the above 3, but also for Level and Overworld
-
 ;---------------------------------------------
 
 if !sa1
@@ -40,7 +29,7 @@ NMIHijack:
 
 .Gamemode:
     if !UberGamemodeNMIAll
-        %GamemodeAllNMIJSLs()       ; macro defined below, added by UAT..just a bunch of JSLs
+        %GamemodeAllNMIJSLs()       ; added by UAT in asm/work/resource_calls.asm
     endif
 
     if !UberGamemodeNMINormal
@@ -69,7 +58,7 @@ NMIHijack:
     endif
 
     if !UberLevelNMIAll
-        %LevelAllNMIJSLs()          ; macro defined below, added by UAT..just a bunch of JSLs
+        %LevelAllNMIJSLs()          ; added by UAT in asm/work/resource_calls.asm
     endif
 
     if !UberLevelNMINormal
@@ -108,7 +97,7 @@ NMIHijack:
     endif
 
     if !UberOverworldNMIAll
-        %OverworldAllNMIJSLs()      ; macro defined below, added by UAT..just a bunch of JSLs
+        %OverworldAllNMIJSLs()      ; added by UAT in asm/work/resource_calls.asm
     endif
 
     if !UberOverworldNMINormal

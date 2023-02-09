@@ -1,5 +1,3 @@
-// FIX: need a way to determine if two strings point to the same resource...it does handle interspersed ".." and "."s now, but not case differences
-
 namespace UberASMTool;
 
 public class UberConfig
@@ -43,7 +41,7 @@ public class UberConfig
                     break;
 
                 case ROMStatement s :
-                    string file = ROMFile;          // because you can't pass a property as a ref param...about as equally gross as giving it an explicit backing varaible
+                    string file = ROMFile;
                     valid &= s.Process(ref file);
                     ROMFile = file;
                     break;
