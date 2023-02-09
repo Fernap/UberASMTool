@@ -56,9 +56,12 @@ public static class ListParser
     // ----------------------------------------------------------------
     // number stuff
 
-    private static readonly Parser<char, char> hex_digit = Try(Any.Where(c => System.Char.IsAsciiHexDigit(c)));
+    // .Net 7 only --
+    //   private static readonly Parser<char, char> hex_digit = Try(Any.Where(c => System.Char.IsAsciiHexDigit(c)));
+    //   private static readonly Parser<char, char> decimal_digit = Try(Any.Where(c => System.Char.IsAsciiDigit(c)));
+    private static readonly Parser<char, char> hex_digit = OneOf("0123456789abcdefABCDEF".ToCharArray());
     private static readonly Parser<char, char> binary_digit = OneOf('0', '1');
-    private static readonly Parser<char, char> decimal_digit = Try(Any.Where(c => System.Char.IsAsciiDigit(c)));
+    private static readonly Parser<char, char> decimal_digit = OneOf("0123456789".ToCharArray());
 
     // prefixes will not consume input on failure
     // not allowing 0b and 0d for binary and decimal respectively since things like
