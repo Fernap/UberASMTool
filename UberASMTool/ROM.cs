@@ -2,6 +2,13 @@ namespace UberASMTool;
 
 using AsarCLR;
 
+public enum SymbolsType
+{
+    None,
+    WLA,
+    nocash
+}
+
 public class ROM
 {
     public int ExtraSize { get; private set; } = 0;      // running extra insert size -- prots and shared routines
@@ -11,6 +18,7 @@ public class ROM
     private byte[] headerData;     // stays null if ROM is headerless
     private string romPath;
     private int romSize;
+    public SymbolsType symbolsType = SymbolsType.None;
     private Dictionary<string, string> defines = new();
     private HashSet<string> routines = new();
 
@@ -148,6 +156,12 @@ public class ROM
 
         // passing an empty path list; this should be fine since files aren't being moved before assembly
         bool status = Asar.patch(Path.Combine(Program.MainDirectory, asmfile), ref romData, null, true, allDefines);
+        if (symbolsType != SymbolsType.None)
+        {
+            string extension = symbolsType.ToString().ToLowerInvariant();
+            string symbols = Asar.getsymbolsfile(format: extension);
+            File.WriteAllText(Path.Combine(Program.MainDirectory, Path.ChangeExtension(asmfile, extension)), symbols);
+        }
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
             MessageWriter.Write(VerboseLevel.Quiet, $"  {error.Fullerrdata}");

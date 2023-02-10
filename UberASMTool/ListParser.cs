@@ -110,6 +110,10 @@ public static class ListParser
         Or(Try(CIString("off").ThenReturn(VerboseLevel.Normal))).
         Or(Try(CIString("quiet").ThenReturn(VerboseLevel.Quiet))).
         Or(Try(CIString("debug").ThenReturn(VerboseLevel.Debug)));
+    private static readonly Parser<char, SymbolsType> symbolsType =
+        Try(CIString("none").ThenReturn(SymbolsType.None)).
+        Or(Try(CIString("wla").ThenReturn(SymbolsType.WLA))).
+        Or(Try(CIString("nocash").ThenReturn(SymbolsType.nocash)));
 
     // this allows a line break after resource num, but not an empty list, so e.g.
     // 105
@@ -137,6 +141,10 @@ public static class ListParser
     private static readonly Parser<char, ConfigStatement> verbose_statement =
         cmd("verbose", verbosity, "Invalid argument to \"verbose:\".  Must be \"on\", \"off\", \"quiet\", or \"debug\".").
         Select(b => (ConfigStatement) new VerboseStatement { Verbosity = b });
+
+    private static readonly Parser<char, ConfigStatement> symbols_statement =
+        cmd("symbols", symbolsType, "Invalid argument to \"symbols:\". Must be \"wla\", \"nocash\", or \"none\".").
+        Select(b => (ConfigStatement) new SymbolsStatement { Type = b });
 
     private static Parser<char, ConfigStatement> mode_statement(string mode, UberContextType n) =>
         cmd(mode, Return(Unit.Value), "").ThenReturn((ConfigStatement) new ModeStatement { Mode = n });
@@ -170,6 +178,7 @@ public static class ListParser
 
     private static readonly List<Parser<char, ConfigStatement>> all_statements =
         new List<Parser<char, ConfigStatement>> { verbose_statement,
+                                                  symbols_statement,
                                                   level_statement, overworld_statement, gamemode_statement,
                                                   global_statement, statusbar_statement, macrolib_statement, rom_statement,
                                                   sprite_statement, freeram_statement,

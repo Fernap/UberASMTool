@@ -15,6 +15,12 @@ public class VerboseStatement : ConfigStatement
     public VerboseLevel Verbosity { get; init; }
 }
 
+// "symbols:"
+public class SymbolsStatement : ConfigStatement
+{
+    public SymbolsType Type { get; init; }
+}
+
 // this should maybe go elsewhere, but leaving here for now:
 public enum FileType { Global, Statusbar, Macrolib, ROM };
 
