@@ -1,9 +1,16 @@
-As of the 2.0 release of UberASM Tool (UAT), there are a couple incompatible patches.  These may get updated at some point,
-but for now, see below for instructions on making them work with the new version.
+As of the 2.0 release of UberASM Tool (UAT), there are a few incompatible resources (either due to hijack conflicts
+or change in UberASM Tool's behavior).  These may get updated at some point, but for now, see below for instructions
+on making them work with the new version.
+
+Quick list of resources, see below for full details:
+
+patch: NSMB Star Coins, by lx5
+patch: SMA2 Slide Kill Chain, by HammerBrother
+uberasm: Teleport on No Enemies, by Thomas
 
 ------------------------------------------------------------------------------
 
-NSMB Star Coins patch, by lx5
+patch: NSMB Star Coins, by lx5
 https://www.smwcentral.net/?p=section&a=details&id=19763
 -------------------
 
@@ -28,7 +35,7 @@ end:
 
 ------------------------------------------------------------------------------
 
-SMA2 Slide Kill Chain, by HammerBrother
+patch: SMA2 Slide Kill Chain, by HammerBrother
 https://www.smwcentral.net/?p=section&a=details&id=12574
 ----------------
 
@@ -45,3 +52,24 @@ end:
 4. In SlideKillChain.asm:
      - delete lines 55-72
      - delete lines 40-42
+
+-------------------------------------------------------------------------------
+
+uberasm: Teleport on No Enemies, by Thomas
+https://www.smwcentral.net/?p=section&a=details&id=20131
+(reported by RichardDS90)
+---------
+
+This is a victim of the change to to the library label exposing (see the changelog).  The simplest workaround is
+to change line 21 from
+
+    JSL TeleportToLevel
+
+to
+
+    JSL TeleportToLevel_TeleportToLevel
+
+You can also change the library file's label to "Main:" (and change the second part of the JSL) to keep the line a bit more concise.
+
+An alternative is to use a shared routine here (as of writing, this needs to be converted from the given library file...see the
+readme for more info, but there may be an included matching routine by the time of the next release).
