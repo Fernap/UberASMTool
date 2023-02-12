@@ -24,7 +24,6 @@ endmacro
 ;db "tool"
 
 CallGamemode:
-    pla : pla                ; kill the return address of the jsr that went here -- we're in a different bank and jumping directly back
     phb
 
     ldx #$02                 ; offset for main
@@ -54,7 +53,7 @@ CallGamemode:
     endif
     phk
     pea .End-1
-    pea $84CF-1
+    pea $84CF-1              ; rtl
     jml [!dp]                ; game mode routines end in rts, so we need this
 
 .End:
@@ -64,4 +63,4 @@ CallGamemode:
     plb
 
 ; return from hijack
-    jml $008075|!bank
+    jml $009326|!bank 

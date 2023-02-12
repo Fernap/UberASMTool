@@ -75,7 +75,11 @@ org $00A18F
 
 ; handles all of main, init, end
 org $009322
-    autoclean JML CallGamemode
+    autoclean jml CallGamemode
+
+; this is new as of 2.0, so we can return here after gamemode end:, maintaining compatibility with kevin's vram optimization patch
+    rts
+    nop #2
 
 ; this handles both uberasm initializaiton, as well as calling the init: label for the global code file
 org $00804E
