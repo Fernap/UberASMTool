@@ -143,7 +143,7 @@ public class ROM
 
 
     // asmfile is relative to the main directory
-    public bool Patch(string asmfile, Dictionary<string, string> extraDefines)
+    public bool Patch(string asmfile, Dictionary<string, string> extraDefines, string baseAsmFilename=null)
     {
         Dictionary<string, string> allDefines;
 
@@ -160,7 +160,7 @@ public class ROM
         {
             string extension = symbolsType.ToString().ToLowerInvariant();
             string symbols = Asar.getsymbolsfile(format: extension);
-            File.WriteAllText(Path.Combine(Program.MainDirectory, Path.ChangeExtension(asmfile, extension)), symbols);
+            File.WriteAllText(Path.Combine(Program.MainDirectory, Path.ChangeExtension(baseAsmFilename ?? asmfile, extension)), symbols);
         }
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
