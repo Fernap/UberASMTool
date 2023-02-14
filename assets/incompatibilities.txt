@@ -7,6 +7,7 @@ Quick list of resources, see below for full details:
 patch: NSMB Star Coins, by lx5
 patch: SMA2 Slide Kill Chain, by HammerBrother
 uberasm: Teleport on No Enemies, by Thomas
+lx5's Dynamic Spriteset System (DSS) v1.01
 
 ------------------------------------------------------------------------------
 
@@ -73,3 +74,14 @@ You can also change the library file's label to "Main:" (and change the second p
 
 An alternative is to use a shared routine here (as of writing, this needs to be converted from the given library file...see the
 readme for more info, but there may be an included matching routine by the time of the next release).
+
+---------------------------------------------------------------------------------
+
+lx5's Dynamic Spriteset System (DSS) v1.01
+https://github.com/TheLX5/DynamicSpritesetSystem/releases)
+------
+
+There's currently a hijack conflict between DSS 1.01 and UAT 2.0.  Acoording to lx5, the upcoming 2.0 release of DSS
+will be compatible.
+
+
