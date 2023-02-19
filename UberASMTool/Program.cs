@@ -108,7 +108,7 @@ public class Program
         MessageWriter.Write(VerboseLevel.Normal, "");
         MessageWriter.Write(VerboseLevel.Normal, "All code inserted successfully.");
 
-        WriteRestoreComment(config.ROMFile, $"{UberMajorVersion}.{UberMinorVersion}");
+        WriteRestoreComment(romfile, $"{UberMajorVersion}.{UberMinorVersion}");
         FileUtils.DeleteTempFiles();
 
         Pause();
