@@ -35,6 +35,7 @@ NMIHijack:
     if !UberGamemodeNMINormal
         rep #$30
         lda $0100|!addr
+        and #$00FF
         asl
         tax
         lda.l NMIGamemodeResourcePointers,x  ; these point to the lists-of-jsls
