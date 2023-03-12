@@ -112,15 +112,15 @@ endmacro
 macro invoke_snes(addr)
     LDA.b #<addr>
     STA $0183
-    LDA.b #<addr>/256
+    LDA.b #<addr>>>8
     STA $0184
-    LDA.b #<addr>/65536
+    LDA.b #<addr>>>16
     STA $0185
     LDA #$D0
     STA $2209
--
+?-
     LDA $018A
-    BEQ -
+    BEQ ?-
     STZ $018A
 endmacro
 
