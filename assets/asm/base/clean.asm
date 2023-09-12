@@ -117,7 +117,7 @@ endif
 if !uber1
     if !sa1
         org $00806B
-            jmp $1E8E
+            jmp $1E8F
             nop
     else
         org $00806B
