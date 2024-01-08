@@ -1558,7 +1558,7 @@ OverworldResourcePointers:
     dw Overworld6JSLs
 
 
-if !UberLevelNMINormal
+if !UberOverworldNMINormal
     NMIOverworldResourcePointers:
         dw Overworld0NMIJSLs
         dw Overworld1NMIJSLs
