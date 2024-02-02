@@ -107,11 +107,11 @@
     LDA $1925|!addr
     ASL A
     REP #$31
-    ADC $00BEA8|!BankB,x
+    ADC $00BEA8|!bank,x
     TAX
     TYA
 
-    if !SA1
+    if !sa1
         ADC.l $00,x
         TAX
         LDA $08
@@ -130,7 +130,7 @@
     LSR A
     SEP #$20
 
-    if !SA1
+    if !sa1
         STA $400000,x
         XBA
         STA $410000,x
@@ -173,10 +173,10 @@
 ?+
     STA $0A
     PHK
-?-
-    PEA (?-)+9
+    PEA.w (?.return)-1
     PEA $804C
-    JML $00C0FB|!BankB
+    JML $00C0FB|!bank
+?.return:
     PLY
     PLB
     PLP

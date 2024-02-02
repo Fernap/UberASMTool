@@ -102,11 +102,11 @@
     LDA $1925|!addr
     ASL A
     REP #$31
-    ADC $00BEA8|!BankB,x
+    ADC $00BEA8|!bank,x
     TAX
     TYA
 
-    if !SA1
+    if !sa1
         ADC.l $00,x
         TAX
         LDA $08
@@ -121,7 +121,7 @@
     TAX
     SEP #$20
 
-    if !SA1
+    if !sa1
         LDA $410000,x
         XBA
         LDA $400000,x
