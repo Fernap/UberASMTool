@@ -274,10 +274,10 @@
                     <li><a class="toclink" href="#DBR">The DBR</a></li>
                     <li><a class="toclink" href="#ExtraBytes">Extra Bytes</a></li>
                     <li><a class="toclink" href="#NMI">NMI</a></li>
-                    <li><a class="toclink" href="#SA1">SA-1</a></li>
-                    <li><a class="toclink" href="#LibraryTecnhnical">The Library</a></li>
+                    <li><a class="toclink" href="#LibraryTechnical">The Library</a></li>
                     <li><a class="toclink" href="#Routines">Shared Routines</a></li>
                     <li><a class="toclink" href="#Other">Other Code Files</a></li>
+                    <li><a class="toclink" href="#SA1">SA-1</a></li>
                     <li><a class="toclink" href="#DosDonts">Dos and Don'ts</a></li>
                 </ol>
             </li>
@@ -428,6 +428,14 @@ level:
         </p>
 
         <h3 id="Issues">Common Issues</h3>
+
+        <p>
+            UberASM Tool 1.x allowed resource labels to be upper case (<code>Main:</code> or <code>MAIN:</code> instead of <code>main:</code>, for example).  This was undocumented and no longer works in 2.0 (mainly for technical reasons).  If a resource doesn't seem to be working (and especially if it did in 1.x), check to make sure the main resource labels (<code>init:</code>, <code>main:</code>, <code>load:</code>, and <code>nmi:</code>) are lower case.  Note that this doesn't apply to other labels or to labels in a library file, since those are called explicitly by the resource itself.
+        </p>
+
+        <p>
+            There's also one change in how library labels are exported that can affect existing resources.  In 1.x, if a library file named <code class="path">Foo.asm</code> also containd the label <code>Foo:</code>, UAT would simply export the label <code>Foo:</code> instead of <code>Foo_Foo:</code> as the documentation suggested.  This has been standardized for 2.0.  Simply change any references like this if you get an error when trying to insert such a resource.  For example, if you see <code>jsl Foo</code>, change it to <code>jsl Foo_Foo</code>.
+        </p>
 
         <p>
             You may run into resources (patches, uberasm, etc) that want you to copy and paste some code into UberASM Tool's global code file.  If that code was destined for the <code>init:</code> label, it should work the same, but previous versions (1.x) also had support for <code>main:</code>, <code>load:</code>, and <code>nmi:</code> labels, which are no longer used.  For code that goes under <code>load:</code>, make a new file and place the code under a <code>load:</code> label, but ending with <code>RTL</code> instead of <code>RTS</code> as the instructions might suggest.  So,

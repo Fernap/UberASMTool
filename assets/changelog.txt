@@ -2,6 +2,14 @@
 -                         Version History                           -
 ---------------------------------------------------------------------
 
+Version 2.0:
+(fernap:)
+- Misc shared routine updates and fixes
+- Fixed an error writing to the .extmod file (reported by Underrout)
+- Fixed a crash for gamemode NMI resources
+- Fixed a hang when updating from 1.x to 2.0 on SA-1 roms (reported by Makhnoslides)
+- Fixed an assembly error when using resources with overworld NMI, but not level NMI (reported by Donut)
+
 Version 2.0 (beta):
 
 (fernap:)
