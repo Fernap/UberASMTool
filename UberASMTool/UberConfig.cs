@@ -24,6 +24,10 @@ public class UberConfig
                     MessageWriter.Verbosity = s.Verbosity;
                     break;
 
+                case SymbolsStatement s:
+                    rom.symbolsType = s.Type;
+                    break;
+
                 case ModeStatement s:
                     currentMode = s.Mode;
                     break;

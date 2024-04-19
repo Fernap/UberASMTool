@@ -89,7 +89,7 @@ public class Resource
         foreach (string label in validLabels)
             labelDefines[$"InvokeSA1{label}"] = SA1Labels.Contains(label) ? "1" : "0";
 
-        if (!rom.Patch("asm/work/resource.asm", labelDefines))
+        if (!rom.Patch("asm/work/resource.asm", labelDefines, Filename))
             return false;
         if (!rom.ProcessPrints(Filename, out int start, out int insertSize, true))
             return false;
