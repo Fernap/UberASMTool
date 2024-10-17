@@ -2,7 +2,8 @@ namespace UberASMTool;
 
 public class Resource
 {
-    public static readonly HashSet<string> validLabels = new HashSet<string> { "init", "main", "load", "end" };
+    public static readonly HashSet<string> validSA1Labels = new HashSet<string> { "init", "main", "load", "end" };
+    public static readonly HashSet<string> requiredLabels = new HashSet<string> { "init", "main", "load", "end", "nmi" };
 
     public int ID { get; init; }       // each resource gets a unique ID -- starts at 0 and increments for each new resource
     public string Filename { get; init; }
@@ -63,7 +64,7 @@ public class Resource
             string[] labels = line.Substring(";>sa1 ".Length).Split(',');
             foreach (string label in labels)
             {
-                if (!validLabels.Contains(label))
+                if (!validSA1Labels.Contains(label))
                 {
                     MessageWriter.Write(VerboseLevel.Quiet, $"Invalid label \"{label}\" in \">sa1\" command in \"{Filename}\".");
                     return false;
@@ -86,7 +87,7 @@ public class Resource
         if (!GenerateResourceFile())
             return false;
 
-        foreach (string label in validLabels)
+        foreach (string label in validSA1Labels)
             labelDefines[$"InvokeSA1{label}"] = SA1Labels.Contains(label) ? "1" : "0";
 
         if (!rom.Patch("asm/work/resource.asm", labelDefines))
@@ -94,12 +95,14 @@ public class Resource
         if (!rom.ProcessPrints(Filename, out int start, out int insertSize, true))
             return false;
 
+        if (!ProcessLabels(rom))
+            return false;
+
         Size = insertSize;
         MessageWriter.Write(VerboseLevel.Verbose, $"  Inserted at ${start:X6}");
         MessageWriter.Write(VerboseLevel.Verbose, $"  Insert size: {Size} (0x{Size:X}) bytes");
         MessageWriter.Write(VerboseLevel.Verbose, "");
-
-        return ProcessLabels(rom);
+        return true;
     }
 
 // gets label information from Asar and adds it to this resource as needed
@@ -118,6 +121,7 @@ public class Resource
         EntryAddress = labels[index].Location;
 
         // this keeps the base ExtraBytes: label, even though nothing uses it
+        bool hasRequiredLabel = false;
         foreach (Asarlabel label in labels)
         {
             if (label.Name.StartsWith("UberRoutine_") && !label.Name.Contains(':'))
@@ -125,6 +129,15 @@ public class Resource
                     return false;
             if (label.Name.StartsWith("Inner_ExtraBytes"))
                 BytesLabels.Add(new Asarlabel { Name = label.Name.Substring("Inner_".Length), Location = label.Location });
+            if (label.Name.StartsWith("Inner_"))
+                if (requiredLabels.Contains(label.Name.Substring("Inner_".Length)))
+                    hasRequiredLabel = true;
+        }
+
+        if (!hasRequiredLabel)
+        {
+            MessageWriter.Write(VerboseLevel.Quiet, $"Error adding \"{Filename}\": No valid labels (init, main, etc.) in file.");
+            return false;
         }
 
         // Asar.getlabelval() crashes instead of returning -1 if the label doesn't exist for some reason, so doing this instead
