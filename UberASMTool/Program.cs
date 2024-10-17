@@ -20,7 +20,7 @@ public class Program
 {
     public static string MainDirectory { get; set; }
     public static readonly int UberMajorVersion = 2;
-    public static readonly int UberMinorVersion = 0;
+    public static readonly int UberMinorVersion = 1;
 
     private static int Main(string[] args)
     {
