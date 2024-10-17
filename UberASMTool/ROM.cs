@@ -6,6 +6,7 @@ public class ROM
 {
     public int ExtraSize { get; private set; } = 0;      // running extra insert size -- prots and shared routines
     public List<int> Cleans { get; private set; } = new();
+    public bool Deprecations { get; set; } = false;
 
     private byte[] romData;        // contains the actual ROM data (without the header if there is one)
     private byte[] headerData;     // stays null if ROM is headerless
@@ -146,8 +147,20 @@ public class ROM
         else
             allDefines = defines.Concat(extraDefines).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);   // ew
 
+        var WarnSettings = new Dictionary<string, bool>
+        {
+            ["Wfeature_deprecated"] = Deprecations
+        };
+
         // passing an empty path list; this should be fine since files aren't being moved before assembly
-        bool status = Asar.patch(Path.Combine(Program.MainDirectory, asmfile), ref romData, null, true, allDefines);
+        bool status = Asar.patch(Path.Combine(Program.MainDirectory, asmfile),
+                                 ref romData,
+                                 null,
+                                 true,
+                                 allDefines,
+                                 null,           // std include file
+                                 null,           // std define file
+                                 WarnSettings);
 
         foreach (Asarerror error in Asar.getwarnings().Concat(Asar.geterrors()))
             MessageWriter.Write(VerboseLevel.Quiet, $"  {error.Fullerrdata}");

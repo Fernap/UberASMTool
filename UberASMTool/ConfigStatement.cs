@@ -15,6 +15,12 @@ public class VerboseStatement : ConfigStatement
     public VerboseLevel Verbosity { get; init; }
 }
 
+// "deprecations:"
+public class DeprecationsStatement : ConfigStatement
+{
+    public bool Warn { get; init; }
+}
+
 // this should maybe go elsewhere, but leaving here for now:
 public enum FileType { Global, Statusbar, Macrolib, ROM };
 

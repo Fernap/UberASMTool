@@ -105,6 +105,9 @@ public static class ListParser
         Or(hex_prefix.Optional().Then(digits(hex_digit, 3)).Select(s => System.Convert.ToInt32(s, 16)));
     private static readonly Parser<char, IEnumerable<int>> extra_bytes =
         signed_byte.SeparatedAndOptionallyTerminatedAtLeastOnce(skip_ws);
+    private static readonly Parser<char, bool> onoff =
+        Try(CIString("on").ThenReturn(true)).
+        Or(Try(CIString("off").ThenReturn(false)));
     private static readonly Parser<char, VerboseLevel> verbosity =
         Try(CIString("on").ThenReturn(VerboseLevel.Verbose)).
         Or(Try(CIString("off").ThenReturn(VerboseLevel.Normal))).
@@ -137,6 +140,9 @@ public static class ListParser
     private static readonly Parser<char, ConfigStatement> verbose_statement =
         cmd("verbose", verbosity, "Invalid argument to \"verbose:\".  Must be \"on\", \"off\", \"quiet\", or \"debug\".").
         Select(b => (ConfigStatement) new VerboseStatement { Verbosity = b });
+    private static readonly Parser<char, ConfigStatement> deprecations_statement =
+        cmd("deprecations", onoff, "Invalid argument to \"deprecations:\".  Must be \"on\" of \"off\".").
+        Select(b => (ConfigStatement) new DeprecationsStatement { Warn = b });
 
     private static Parser<char, ConfigStatement> mode_statement(string mode, UberContextType n) =>
         cmd(mode, Return(Unit.Value), "").ThenReturn((ConfigStatement) new ModeStatement { Mode = n });
@@ -169,7 +175,7 @@ public static class ListParser
         select (ConfigStatement) new ResourceStatement { Number = num, Calls = fs.ToList() };
 
     private static readonly List<Parser<char, ConfigStatement>> all_statements =
-        new List<Parser<char, ConfigStatement>> { verbose_statement,
+        new List<Parser<char, ConfigStatement>> { verbose_statement, deprecations_statement,
                                                   level_statement, overworld_statement, gamemode_statement,
                                                   global_statement, statusbar_statement, macrolib_statement, rom_statement,
                                                   sprite_statement, freeram_statement,
