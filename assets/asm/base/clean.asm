@@ -44,7 +44,7 @@ macro Clean(hijack)
         while read4(!ptr-4) != !text_uber
             !ptr #= !ptr-3
             autoclean read3(!ptr)
-        endif
+        endwhile
     endif
 endmacro
 
