@@ -2,7 +2,15 @@
 ; If you want to add your own, use the macro library file (see the readme for more information)
 
 ; Check if SA-1 is present.
-if read1($00ffd5) == $23
+if read1($00FFD5) == $23
+    if read1($00FFD7) == $0D        ; rom size > 4mb
+        fullsa1rom
+        !fullsa1 = 1
+    else
+        sa1rom
+        !fullsa1 = 0
+    endif
+
     !sa1    = 1
     !dp     = $3000
     !addr   = $6000
@@ -10,18 +18,17 @@ if read1($00ffd5) == $23
     !bank8  = $00
 
     !sprite_slots = 22
-
-    sa1rom
 else
-    !sa1    = 0
-    !dp     = $0000
-    !addr   = $0000
-    !bank   = $800000
-    !bank8  = $80
+    lorom
+
+    !sa1     = 0
+    !fullsa1 = 0
+    !dp      = $0000
+    !addr    = $0000
+    !bank    = $800000
+    !bank8   = $80
 
     !sprite_slots = 12
-
-    lorom
 endif
 
 if read1($0FFFE0)&$01 == $01
