@@ -34,6 +34,12 @@ public class Program
             return 1;
         }
 
+        if (!FileUtils.CreateDirs())
+        {
+            Pause();
+            return 1;
+        }
+
         // this should respect quiet mode when no args given if everything else is otherwise ok
         // really not sure if this should print out usage when no args are given if everything is okay anyway
         if (args.Length == 0 || args.Length > 2)
