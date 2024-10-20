@@ -11,7 +11,6 @@ public class ROM
     private byte[] romData;        // contains the actual ROM data (without the header if there is one)
     private byte[] headerData;     // stays null if ROM is headerless
     private string romPath;
-    private int romSize;
     private Dictionary<string, string> defines = new();
     private HashSet<string> routines = new();
 
@@ -76,7 +75,7 @@ public class ROM
             return false;
         }
 
-        romSize = fileData.Length;
+        int romSize = fileData.Length;
         if (romSize % 0x8000 == 512)
         {
             romSize -= 512;
@@ -112,17 +111,14 @@ public class ROM
         return true;
     }
 
-    // TODO: have this just write directly from romData and headerData instead of copying to a separate buffer
     public bool Save()
     {
-        byte[] final = new byte[romSize + ((headerData != null) ? 512 : 0)];
-
-        headerData?.CopyTo(final, 0);
-        romData.CopyTo(final, headerData == null ? 0 : 512);
-
         try
         {
-            File.WriteAllBytes(romPath, final);
+            using FileStream fs = new FileStream(romPath, FileMode.Create);
+            if (headerData != null)
+                fs.Write(headerData, 0, headerData.Length);
+            fs.Write(romData, 0, romData.Length);
         }
         catch (Exception e)
         {
