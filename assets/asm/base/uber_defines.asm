@@ -37,6 +37,9 @@ else
     !Has255SpritesPerLevel = 1
 endif
 
+; set this to 1 if you want to prevent level nmi: code from running on the title screen (old behavior); see the readme for more information
+!DisableTitleScreenLevelNMI = 0
+
 !EXLEVEL = 0
 if (((read1($0FF0B4)-'0')*100)+((read1($0FF0B4+2)-'0')*10)+(read1($0FF0B4+3)-'0')) > 253
 	!EXLEVEL = 1

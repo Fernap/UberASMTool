@@ -535,7 +535,7 @@ main:
             Game mode code's <code>init:</code> and <code>main:</code> labels will run at the start of the main game loop.  On the first frame the mode is active, <code>init:</code> is run, and on all subsequent frames, <code>main:</code> is run.  The <code>end:</code> label is run after the entire rest of the game loop, including the $0420 -> $0400 conversion routine.  You may have noticed that UberASM Tool supports game modes $00-FF, even though SMW only uses game modes $00-29.  Any game mode $2A or higher is a custom mode, and thus there will be no base SMW routine to run for that frame (except for the standard NMI routine).
         </p>
         <p>
-            For all resource types, the <code>nmi:</code> label runs early during SMW's NMI routine.  Level resources have their NMI label called during game modes $13 and $14, and overworld resources during game modes $0D and $0E.  In both cases, actual game mode code under "nmi:" will run first.  See <a href="#NMI">NMI</a> for more information.
+            For all resource types, the <code>nmi:</code> label runs early during SMW's NMI routine.  Level resources have their NMI label called during game modes $13 and $14, and overworld resources during game modes $0D and $0E.  In both cases, actual game mode code under "nmi:" will run first.  See <a href="#NMI">NMI</a> for more information.  As of version 2.1, level NMI routines also run in game modes $05-07 in order to be active on the title screen, but this can be disabled by editing <code class="path">asm/base/uber_defines.asm</code> and changing the <code>!DisableTitleScreenLevelNMI</code> define to 1.
         </p>
 
         <h3 id="DBR">The DBR</h3>

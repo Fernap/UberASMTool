@@ -47,14 +47,23 @@ NMIHijack:
 
 
 ; level nmi
-; run for GMs 13 & 14
+; run for GMs 13-14 (always) and 5-7 (if the corresponding option isn't disabled)
 .Level:
     if !UberLevelNMI
         lda $0100|!addr
-        cmp #$13
-        beq +
         cmp #$14
-        bne .Overworld
+        beq +
+        if !DisableTitleScreenLevelNMI
+            cmp #$13
+            bne .Overworld
+        else
+            cmp #$13
+            beq +
+            cmp #$08
+            bcs .Overworld
+            cmp #$05
+            bcc .Overworld
+        endif
     +
     endif
 
