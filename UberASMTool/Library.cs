@@ -72,6 +72,8 @@ public class LibraryHandler
         {
             if (label.Name.Contains(":"))      // skips macro-local and +/- labels
                 continue;
+            if (label.Name.Contains("."))      // also skips struct fields, which aren't legal label names either
+                continue;
             if (label.Name.StartsWith("UberRoutine_"))
             {
                 if (!rom.AddRoutine(file, label.Name.Substring("UberRoutine_".Length), label.Location))
