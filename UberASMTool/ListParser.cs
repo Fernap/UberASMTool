@@ -141,7 +141,7 @@ public static class ListParser
         cmd("verbose", verbosity, "Invalid argument to \"verbose:\".  Must be \"on\", \"off\", \"quiet\", or \"debug\".").
         Select(b => (ConfigStatement) new VerboseStatement { Verbosity = b });
     private static readonly Parser<char, ConfigStatement> deprecations_statement =
-        cmd("deprecations", onoff, "Invalid argument to \"deprecations:\".  Must be \"on\" of \"off\".").
+        cmd("deprecations", onoff, "Invalid argument to \"deprecations:\".  Must be \"on\" or \"off\".").
         Select(b => (ConfigStatement) new DeprecationsStatement { Warn = b });
 
     private static Parser<char, ConfigStatement> mode_statement(string mode, UberContextType n) =>
