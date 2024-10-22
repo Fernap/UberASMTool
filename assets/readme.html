@@ -313,7 +313,7 @@
             UberASM Tool has the command line syntax:
         </p>
 <pre>
-&gt; UberASMTool [&lt;list file&gt; [&lt;ROM file&gt;]]
+&gt; UberASMTool [options...] [&lt;list file&gt; [&lt;ROM file&gt;]]
 </pre>
          <p>
             If no <code>&lt;list file&gt;</code> is given, UberASM Tool will use the file <code class="path">list.txt</code>.  If no <code>&lt;ROM file&gt;</code> is given, UberASM Tool will use the ROM file given by the <code>rom:</code> command in the list file.  For example:
@@ -324,7 +324,21 @@ rom: MyHack.smc         ; ROM file to use.
 
         <p>
             All files may be given either as absolute paths or as paths relative to the UberASM Tool executable file.  Alternatively, you can simply double click the executable and it will run as if no command line arguments were given.
+        </p>
+
         <p>
+            The following options are supported (and strictly speaking may be placed in any order in the whole command line):
+        </p>
+        <dl>
+            <dt><code>-p</code></dt>
+            <dd>Disables the <code>Press any key to continue...</code> prompt when finished.</dd>
+
+            <dt><code>-q</code></dt>
+            <dd>Enables quiet mode (the same as setting <code>verbose: quiet</code> in the list file).  This supresses a couple messages that can get displayed before the list file is actually processed.</dd>
+
+            <dt><code>-v</code></dt>
+            <dd>Prints the version number of the program and exits.</dd>
+        </dl>
 
         <h3 id="ListFile">The List File</h3>
 

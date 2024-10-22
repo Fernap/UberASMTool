@@ -22,10 +22,55 @@ public class Program
     public static readonly int UberMajorVersion = 2;
     public static readonly int UberMinorVersion = 1;
 
+    static bool pause = true;
+
     private static int Main(string[] args)
     {
         MainDirectory = System.AppContext.BaseDirectory;
         Directory.SetCurrentDirectory(MainDirectory);
+
+        List<string> other = new();
+        foreach (string arg in args)
+        {
+            if (arg == "")
+                continue;
+            if (arg[0] == '-')
+            {
+                switch (arg)
+                {
+                    case "-v":
+                        MessageWriter.Write(VerboseLevel.Quiet, $"UberASM Tool version {UberMajorVersion}.{UberMinorVersion}");
+                        return 0;
+                    case "-p":
+                        pause = false;
+                        break;
+                    case "-q":
+                        MessageWriter.Verbosity = VerboseLevel.Quiet;
+                        break;
+                    default:
+                        MessageWriter.Write(VerboseLevel.Quiet, $"Unknown option {arg}.  See the readme for a full list.");
+                        Pause();
+                        return 1;
+                }
+            }
+            else
+            {
+                other.Add(arg);
+            }
+        }
+
+        if (other.Count > 2)
+        {
+            PrintUsage(VerboseLevel.Quiet);
+            Pause();
+            return 1;
+        }
+
+        // really not sure if this should print out usage when no args are given if everything is okay anyway
+        if (other.Count == 0)
+            PrintUsage(VerboseLevel.Normal);
+
+        string listFile = (other.Count >= 1) ? other[0] : "list.txt";
 
         if (!Asar.init())
         {
@@ -40,21 +85,6 @@ public class Program
             return 1;
         }
 
-        // this should respect quiet mode when no args given if everything else is otherwise ok
-        // really not sure if this should print out usage when no args are given if everything is okay anyway
-        if (args.Length == 0 || args.Length > 2)
-            PrintUsage();
-
-        if (args.Length > 2)
-        {
-            Pause();
-            return 1;
-        }
-
-        string listFile = (args.Length >= 1) ? args[0] : "list.txt";
-
-        // want to print this as "normal" priority, but it should also respect quiet mode, which we don't know
-        // yet because it's in the list file.  Need a command line option to force it
         MessageWriter.Write(VerboseLevel.Normal, "Processing list file...");
         IEnumerable<ConfigStatement> statements = ListParser.ParseList(listFile);
         if (statements == null) { Abort(); return 1; }
@@ -68,7 +98,7 @@ public class Program
 
         if (!config.ProcessList(statements, resourceHandler, rom)) { Abort(); return 1; }
 
-        string romfile = (args.Length >= 2) ? args[1] : config.ROMFile;
+        string romfile = (other.Count >= 2) ? other[1] : config.ROMFile;
         if (romfile == null)
         {
             MessageWriter.Write(VerboseLevel.Quiet, "No ROM file specified in list file or on command line.");
@@ -131,6 +161,9 @@ public class Program
 
     private static void Pause()
     {
+        if (!pause)
+            return;
+
         Console.Write("Press any key to continue...");
 
         try
@@ -140,13 +173,14 @@ public class Program
         catch {	}
     }
 
-    public static void PrintUsage()
+    public static void PrintUsage(VerboseLevel verbosity)
     {
-        MessageWriter.Write(VerboseLevel.Quiet, "Usage: UberASMTool [<list file> [<ROM file>]]");
-        MessageWriter.Write(VerboseLevel.Quiet, "If list file is not specified, UberASM Tool will try loading 'list.txt'.");
-        MessageWriter.Write(VerboseLevel.Quiet, "If ROM file is not specified, UberASM Tool will search for the one in the list file.");
-        MessageWriter.Write(VerboseLevel.Quiet, "Unless absolute paths are given, the directory relative to the UberASM Tool executable will be used.");
-        MessageWriter.Write(VerboseLevel.Quiet, "");
+        MessageWriter.Write(verbosity, "Usage: UberASMTool [options...] [<list file> [<ROM file>]]");
+        MessageWriter.Write(verbosity, "If <list file> is not specified, UberASM Tool will try loading \"list.txt\".");
+        MessageWriter.Write(verbosity, "If <ROM file> is not specified, UberASM Tool will search for the one in the list file.");
+        MessageWriter.Write(verbosity, "Unless absolute paths are given, the directory relative to the UberASM Tool executable will be used.");
+        MessageWriter.Write(verbosity, "See the readme for a full list of valid options.");
+        MessageWriter.Write(verbosity, "");
     }
 
     // this doesn't really fit anywhere else
