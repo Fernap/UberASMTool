@@ -2,6 +2,17 @@
 -                         Version History                           -
 ---------------------------------------------------------------------
 
+Version 2.1 (beta 1):
+(fernap):
+- Added some command line options: disable "press any key to continue"; early setting of quiet mode; print version number ... see readme for details
+- Level NMI code now runs in game modes 05-07 also so as to be active on the title screen, with an option to disable new behavior (suggested by MarioFanGamer)
+- Fixed a crash when patching causes asar to expand the ROM (reported by Anas)
+- Now creates any necessary work folders that don't already exist at program startup (suggested by Underrout)
+- Added a 'deprecations' command to the list file to either show or hide asar's deprecation warnings (hide by default)
+- Added fallsa1rom support
+- Now throws an error when resource files contain no valid labels (suggested by RPGHacker)
+- Updated to asar 1.91
+
 Version 2.0:
 (fernap:)
 - Misc shared routine updates and fixes
