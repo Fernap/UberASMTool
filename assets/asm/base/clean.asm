@@ -13,7 +13,11 @@
 ; if a bogus section is found, it's just skipped silently
 
 if read1($00FFD5) == $23
-    sa1rom
+    if read1($00FFD7) == $0D        ; rom size > 4mb
+        fullsa1rom
+    else
+        sa1rom
+    endif
     !sa1 = 1
     !addr = $6000
     !bank = $000000
