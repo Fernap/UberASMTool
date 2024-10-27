@@ -33,8 +33,8 @@ NMIHijack:
     endif
 
     if !UberGamemodeNMINormal
-        rep #$30
         lda $0100|!addr
+        rep #$30
         and #$00FF
         asl
         tax
