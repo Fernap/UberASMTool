@@ -6,9 +6,9 @@ public static class MessageWriter
 {
     public static VerboseLevel Verbosity { get; set; } = VerboseLevel.Normal;
 
-    public static void Write(VerboseLevel level, string msg, params object[] args)
+    public static void Write(VerboseLevel level, string msg)
     {
         if (Verbosity >= level)
-            Console.WriteLine(msg, args);
+            Console.WriteLine(msg);
     }
 }
