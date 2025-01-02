@@ -307,3 +307,10 @@ endmacro
 %define_base2_address(extended_table_3,$1996)
 %define_base2_address(extended_table_4,$19A0)
 %define_base2_address(extended_table_5,$19AA)
+
+; Private defines; do not use or change -----------------------------
+
+!UberOffsetInit = $00
+!UberOffsetMain = $02
+!UberOffsetEnd  = $04
+!UberOffsetLoad = $06

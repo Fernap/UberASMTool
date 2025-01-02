@@ -26,12 +26,12 @@ endmacro
 CallGamemode:
     phb
 
-    ldx #$02                 ; offset for main
+    ldx #!UberOffsetMain
     lda $0100|!addr
     cmp !previous_mode
     sta !previous_mode
     beq +
-    ldx #$00                 ; previous and current modes not the same, so load offset for init instead
+    ldx #!UberOffsetInit                 ; previous and current modes not the same, so load offset for init instead
 +
     %CallGamemodeResources()
     plb
@@ -58,7 +58,7 @@ CallGamemode:
 
 .End:
     phb
-    ldx #$04                   ; offset for end
+    ldx #!UberOffsetEnd
     %CallGamemodeResources()
     plb
 

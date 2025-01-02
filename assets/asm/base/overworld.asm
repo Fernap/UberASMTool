@@ -27,7 +27,7 @@ CallOverworldMainEnd:
     jsl $7F8000              ; restore clobbered
     phb
 
-    %CallOverworldResources($02)
+    %CallOverworldResources(!UberOffsetMain)
 
 ; call main part of OW routine, taking care to invoke the sa-1 side like the sa-1 patch does here
     if !sa1
@@ -41,7 +41,7 @@ CallOverworldMainEnd:
 
 ; fall through to the code to run end: for overworld stuff
 
-    %CallOverworldResources($04)
+    %CallOverworldResources(!UberOffsetEnd)
     plb
 
 ; return from hijack, this just jumps to the OAM prep routine, which is what the next instruction would have done
@@ -59,7 +59,7 @@ CallOverworldInit:
 .return:
 
     phb
-    %CallOverworldResources($00)
+    %CallOverworldResources(!UberOffsetInit)
     plb
 
 ; return from hijack

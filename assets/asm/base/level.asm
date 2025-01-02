@@ -31,7 +31,7 @@ CallLevelLoad:
     sep #$30
     phb
 
-    %CallLevelResources($06)
+    %CallLevelResources(!UberOffsetLoad)
     plb
 
 ; return back from hijack
@@ -50,7 +50,7 @@ CallLevelLoad:
 CallLevelInit:
     sep #$30
     phb
-    %CallLevelResources($00)
+    %CallLevelResources(!UberOffsetInit)
     plb
 
 ; return back from hijack -- first instruction back sets A/X/Y back to 8-bit, which we've already done
@@ -73,7 +73,7 @@ CallLevelMain:
     jsl $7F8000
 +
 
-    %CallLevelResources($02)
+    %CallLevelResources(!UberOffsetMain)
     plb
 
 ; return back from hijack
@@ -89,7 +89,7 @@ CallLevelEnd:
     sta $1C                 ; restore clobbered
 
     phb
-    %CallLevelResources($04)
+    %CallLevelResources(!UberOffsetEnd)
     plb
 
 ; return back from hijack, which just jumps to the OAM prep routine
