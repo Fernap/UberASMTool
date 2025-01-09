@@ -170,7 +170,7 @@ public class Resource
     // writes asm/work/resource.asm with this resource's information
     private bool GenerateResourceFile()
     {
-        string output = $"!UberFilename = \"{Filename}\"" + Environment.NewLine +
+        string output = $"!UberFilename = \"{Filename.Replace("!", "\\!")}\"" + Environment.NewLine +
                         $"!UberSetDBR = {(SetDBR ? 1 : 0)}" + Environment.NewLine +
                         "incsrc \"../base/resource_template.asm\"" + Environment.NewLine;
         return FileUtils.TryWriteFile("asm/work/resource.asm", output);

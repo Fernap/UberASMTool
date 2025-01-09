@@ -46,6 +46,7 @@ public abstract class FileStatement : ConfigStatement
             Error($"File \"{path}\" not found.");
             return false;
         }
+        path = path.Replace("!", "\\!");
         rom.AddDefine(Define, path);
         return true;
     }
