@@ -2,22 +2,23 @@ namespace UberASMTool;
 
 public class Resource
 {
-    public static readonly HashSet<string> validSA1Labels = new HashSet<string> { "init", "main", "load", "end" };
-    public static readonly HashSet<string> requiredLabels = new HashSet<string> { "init", "main", "load", "end", "nmi" };
+    public static readonly HashSet<string> validSA1Labels = ["init", "main", "load", "end"];
+    public static readonly HashSet<string> requiredLabels = ["init", "main", "load", "end", "nmi"];
 
     public int ID { get; init; }       // each resource gets a unique ID -- starts at 0 and increments for each new resource
     public string Filename { get; init; }
 
-    public bool SetDBR { get; private set; } = true;   // changed to false if the resource contains the ">dbr off" command
+    public bool SetDBR { get; private set; } = true;      // changed to false if the resource contains the ">dbr off" command
     public int NumBytes { get; private set; } = 0;        // how many extra bytes this resource uses (0 for none, the default)
+    public bool VarBytes { get; private set; } = false;   // if true, resource takes a variable number of bytes (and NumBytes is ignored)
 
     public int EntryAddress { get; set; }   // ROM address of the ResourceEntry: label for this resource
     public bool HasNMI { get; private set; }       // true if this resource has an nmi: label, false if not
     public int NMIAddress { get; set; }
     public int Size { get; private set; }
 
-    public HashSet<string> SA1Labels { get; } = new();    // which labels should be invoked with sa1 if possible (via >sa1 command)
-    public List<Asarlabel> BytesLabels { get; } = new();  // ROM address of the ExtraBytes: sublabels for this resource
+    public HashSet<string> SA1Labels { get; } = [];    // which labels should be invoked with sa1 if possible (via >sa1 command)
+    public List<Asarlabel> BytesLabels { get; } = [];  // ROM address of the ExtraBytes: sublabels for this resource
 
     public Resource(string file, int id)
     {
@@ -40,28 +41,34 @@ public class Resource
         string line = Array.Find(lines, x => x.StartsWith(";>bytes "));
         if (line != null)
         {
-            int bytes;
-            try
+            string tail = line[";>bytes ".Length..];
+            if (tail == "any")
+                VarBytes = true;
+            else
             {
-                bytes = Convert.ToInt32(line.Substring(8));
+                int bytes;
+                try
+                {
+                    bytes = Convert.ToInt32(tail);
+                }
+                catch
+                {
+                    MessageWriter.Write(VerboseLevel.Quiet, $"Invalid number in \">bytes\" command in \"{Filename}\".");
+                    return false;
+                }
+                if (bytes < 0 || bytes > 255)
+                {
+                    MessageWriter.Write(VerboseLevel.Quiet, $"Invalid value in \">bytes\" command in \"{Filename}\" (must be 0 - 255).");
+                    return false;
+                }
+                NumBytes = bytes;
             }
-            catch
-            {
-                MessageWriter.Write(VerboseLevel.Quiet, $"Invalid number in \">bytes\" command in \"{Filename}\".");
-                return false;
-            }
-            if (bytes < 0 || bytes > 255)
-            {
-                MessageWriter.Write(VerboseLevel.Quiet, $"Invalid value in \">bytes\" command in \"{Filename}\" (must be 0 - 255).");
-                return false;
-            }
-            NumBytes = bytes;
         }
 
         line = Array.Find(lines, x => x.StartsWith(";>sa1 "));
         if (line != null)
         {
-            string[] labels = line.Substring(";>sa1 ".Length).Split(',');
+            string[] labels = line[";>sa1 ".Length..].Split(',');
             foreach (string label in labels)
             {
                 if (!validSA1Labels.Contains(label))
@@ -79,7 +86,7 @@ public class Resource
     // bad name maybe...this patches a resource into the rom and gathers label data and such
     public bool Add(ROM rom, UberConfig config)
     {
-        Dictionary<string, string> labelDefines = new();
+        Dictionary<string, string> labelDefines = [];
 
         MessageWriter.Write(VerboseLevel.Verbose, $"Adding resource \"{Filename}\"...");
         if (!GenerateExtraBytesFile(config))
@@ -125,12 +132,12 @@ public class Resource
         foreach (Asarlabel label in labels)
         {
             if (label.Name.StartsWith("UberRoutine_") && !label.Name.Contains(':'))
-                if (!rom.AddRoutine(Filename, label.Name.Substring("UberRoutine_".Length), label.Location))
+                if (!rom.AddRoutine(Filename, label.Name["UberRoutine_".Length..], label.Location))
                     return false;
             if (label.Name.StartsWith("Inner_ExtraBytes"))
-                BytesLabels.Add(new Asarlabel { Name = label.Name.Substring("Inner_".Length), Location = label.Location });
+                BytesLabels.Add(new Asarlabel { Name = label.Name["Inner_".Length..], Location = label.Location });
             if (label.Name.StartsWith("Inner_"))
-                if (requiredLabels.Contains(label.Name.Substring("Inner_".Length)))
+                if (requiredLabels.Contains(label.Name["Inner_".Length..]))
                     hasRequiredLabel = true;
         }
 

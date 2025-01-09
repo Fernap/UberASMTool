@@ -561,7 +561,10 @@ main:
         <h3 id="ExtraBytes">Extra Bytes</h3>
 
         <p>
-            To tell UberASM Tool that a resource takes extra bytes, it must contain a line of the exact form (starting at column 1) <code>;&gt;bytes &lt;number&gt;</code> somewhere in the resource's <code class="path">.asm</code> file.  Only the first such line is read, and <code>&lt;number&gt;</code> must be a decimal number in the range 0-255 that says how many extra bytes this resource uses.
+            To tell UberASM Tool that a resource takes a fixed number of extra bytes, it must contain a line of the exact form (starting at column 1) <code>;&gt;bytes &lt;number&gt;</code> somewhere in the resource's <code class="path">.asm</code> file.  Only the first such line is read, and <code>&lt;number&gt;</code> must be a decimal number in the range 0-255 that says how many extra bytes this resource uses.
+        </p>
+        <p>
+            As of version 2.1, UAT also allows resources to take a variable number of extra bytes; to indicate this, use the line <code>;&gt;bytes any</code> instead.  This will cause UAT to accept any number of bytes (including none, max still 255) to be specified each time a resource is invoked in the list file.  In this case, the first byte passed to the resource will be a count of the number of bytes that were supplied in the list file (which may be 0 if none were specified), and the extra bytes themselves will start from the second byte.
         </p>
         <p>
             Generally UAT passes a 16-bit pointer to the extra bytes for the current level/gamemode/overworld in $00-01.  So for example, to load the third extra byte, you can use the code:

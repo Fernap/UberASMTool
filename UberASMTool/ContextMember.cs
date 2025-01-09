@@ -36,7 +36,13 @@ public class ContextMember
 
         // note only the first call to this resource for this level/ow/gm is used, which is okay since we're not allowing duplicate calls
         output.AppendLine($".{sublabel}:");
-        output.AppendFormat("    db {0}", String.Join(", ", call.Bytes.Select(x => $"${x:X2}")));
+        if (resource.VarBytes)
+            if (call.Bytes.Count == 0)
+                output.AppendLine("    db 0");
+            else
+                output.AppendFormat("    db {0:d}, {1}", call.Bytes.Count, String.Join(", ", call.Bytes.Select(x => $"${x:X2}")));
+        else
+            output.AppendFormat("    db {0}", String.Join(", ", call.Bytes.Select(x => $"${x:X2}")));
         output.AppendLine();
     }
 

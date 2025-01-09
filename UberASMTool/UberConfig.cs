@@ -102,7 +102,7 @@ public class UberConfig
 
     public void GenerateExtraBytes(Resource resource, StringBuilder output)
     {
-        if (resource.NumBytes > 0)
+        if (resource.VarBytes || resource.NumBytes > 0)
         {
             levelContext.GenerateExtraBytes(output, resource);
             gamemodeContext.GenerateExtraBytes(output, resource);

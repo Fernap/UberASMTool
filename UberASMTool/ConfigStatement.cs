@@ -167,10 +167,21 @@ public class ResourceStatement : ConfigStatement
                 return false;
             }
 
-            if (call.Bytes.Count != resource.NumBytes)
+            if (resource.VarBytes)
             {
-                Error($"Incorrect number of extra bytes supplied: Expected {resource.NumBytes}, but found {call.Bytes.Count}");
-                return false;
+                if (call.Bytes.Count > 255)
+                {
+                    Error("Too many extra bytes supplied (max is 255)");
+                    return false;
+                }
+            }
+            else
+            {
+                if (call.Bytes.Count != resource.NumBytes)
+                {
+                    Error($"Incorrect number of extra bytes supplied: Expected {resource.NumBytes}, but found {call.Bytes.Count}");
+                    return false;
+                }
             }
 
             member.AddCall(resource, call.Bytes);
