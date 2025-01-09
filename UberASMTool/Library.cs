@@ -32,8 +32,9 @@ public class LibraryHandler
 
             MessageWriter.Write(VerboseLevel.Verbose, $"  Processing {(binary ? "binary" : "asm")} file \"{relPath}\":");
 
-            string output = "incsrc \"../base/library_template.asm\"" + Environment.NewLine +
-                            $"%UberLibrary(\"{relPath}\", {(binary ? 1 : 0)})" + Environment.NewLine;
+            string output = $"!UberFilename = \"{relPath}\"" + Environment.NewLine +
+                            $"!UberBinary = {(binary ? 1 : 0)}" + Environment.NewLine +
+                            "incsrc \"../base/library_template.asm\"" + Environment.NewLine;
 
             if (!FileUtils.TryWriteFile("asm/work/library.asm", output))
                 return false;

@@ -12,77 +12,75 @@ incsrc "../work/library_labels.asm"
 
 namespace nested on
 
-macro UberResource(filename, setdbr)
-    freecode cleaned
+freecode cleaned
 
-    print "_startl ", pc
+print "_startl ", pc
 
-    init:
-    main:
-    end:
-    load:
+init:
+main:
+end:
+load:
+    rtl
+
+namespace Inner
+
+if !sa1
+            
+    ResourceEntry:
+        lda $06,S
+        tax
+        lda.l SA1Labels,x
+        beq .NotSA1
+        stx $03
+        %invoke_sa1(.SA1)
         rtl
 
-    namespace Inner
+    .SA1:
+        if <setdbr>
+            phk
+            plb
+        endif
+        ldx $03
+        jmp (ResourceLabels,x)
 
-    if !sa1
-            
-        ResourceEntry:
-            lda $06,S
-            tax
-            lda.l SA1Labels,x
-            beq .NotSA1
-            stx $03
-            %invoke_sa1(.SA1)
-            rtl
+    .NotSA1:
+        if !UberSetDBR
+            phk
+            plb
+        endif
+        jmp (ResourceLabels,x)
 
-        .SA1:
-            if <setdbr>
-                phk
-                plb
-            endif
-            ldx $03
-            jmp (ResourceLabels,x)
+else
 
-        .NotSA1:
-            if <setdbr>
-                phk
-                plb
-            endif
-            jmp (ResourceLabels,x)
+    ResourceEntry:
+        if !UberSetDBR
+            phk
+            plb
+        endif
+        lda $06,S
+        tax
+        jmp (ResourceLabels,x)
 
-    else
+endif
 
-        ResourceEntry:
-            if <setdbr>
-                phk
-                plb
-            endif
-            lda $06,S
-            tax
-            jmp (ResourceLabels,x)
+ResourceLabels:
+    dw init
+    dw main
+    dw end
+    dw load
 
-    endif
+if !sa1
+    SA1Labels:
+        dw !InvokeSA1init
+        dw !InvokeSA1main
+        dw !InvokeSA1end
+        dw !InvokeSA1load
+endif
 
-    ResourceLabels:
-        dw init
-        dw main
-        dw end
-        dw load
+incsrc "!UberFilename"
 
-    if !sa1
-        SA1Labels:
-            dw !InvokeSA1init
-            dw !InvokeSA1main
-            dw !InvokeSA1end
-            dw !InvokeSA1load
-    endif
+ExtraBytes:
+incsrc "../work/extra_bytes.asm"
 
-    incsrc "<filename>"
-
-    ExtraBytes:
-    incsrc "../work/extra_bytes.asm"
-
-    print "_endl ", pc
-    namespace off
-endmacro
+print "_endl ", pc
+namespace off
