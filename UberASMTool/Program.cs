@@ -18,7 +18,7 @@ namespace UberASMTool;
 
 public class Program
 {
-    public static string MainDirectory { get; set; }
+    public static string MainDirectory { get; private set; }
     public static readonly int UberMajorVersion = 2;
     public static readonly int UberMinorVersion = 1;
 
@@ -29,12 +29,30 @@ public class Program
         MainDirectory = System.AppContext.BaseDirectory;
         Directory.SetCurrentDirectory(MainDirectory);
 
-        List<string> other = new();
+        List<string> other = [];
+        bool dirnext = false;              // this is an utterly horrid ad hoc way of doing this, which I'll revisit if I ever need to do anything more significant with command line args
         foreach (string arg in args)
         {
-            if (arg == "")
+            if (dirnext)
+            {
+                try
+                {
+                    Directory.SetCurrentDirectory(arg);
+                    MainDirectory = Directory.GetCurrentDirectory();
+                }
+                catch (Exception e)
+                {
+                    MessageWriter.Write(VerboseLevel.Quiet, $"Could not set directory to {arg}: {e.Message}");
+                    Pause();
+                    return 1;
+                }
+                dirnext = false;
+            }
+
+            else if (arg == "")
                 continue;
-            if (arg[0] == '-')
+
+            else if (arg[0] == '-')
             {
                 switch (arg)
                 {
@@ -47,6 +65,9 @@ public class Program
                     case "-q":
                         MessageWriter.Verbosity = VerboseLevel.Quiet;
                         break;
+                    case "-d":
+                        dirnext = true;
+                        break;
                     default:
                         MessageWriter.Write(VerboseLevel.Quiet, $"Unknown option {arg}.  See the readme for a full list.");
                         Pause();
@@ -54,9 +75,14 @@ public class Program
                 }
             }
             else
-            {
                 other.Add(arg);
-            }
+        }
+
+        if (dirnext)
+        {
+            MessageWriter.Write(VerboseLevel.Quiet, "No directory given after -d.  See the readme for more information.");
+            Pause();
+            return 1;
         }
 
         if (other.Count > 2)
@@ -79,15 +105,15 @@ public class Program
             return 1;
         }
 
+        MessageWriter.Write(VerboseLevel.Normal, "Processing list file...");
+        IEnumerable<ConfigStatement> statements = ListParser.ParseList(listFile);
+        if (statements == null) { Abort(); return 1; }
+
         if (!FileUtils.CreateDirs())
         {
             Pause();
             return 1;
         }
-
-        MessageWriter.Write(VerboseLevel.Normal, "Processing list file...");
-        IEnumerable<ConfigStatement> statements = ListParser.ParseList(listFile);
-        if (statements == null) { Abort(); return 1; }
 
         var config = new UberConfig();
         var resourceHandler = new ResourceHandler();

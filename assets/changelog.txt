@@ -2,6 +2,8 @@
 -                         Version History                           -
 ---------------------------------------------------------------------
 
+- Added a -d command line option to set the working directory (thanks to RPGHacker for the suggestion and feedback)
+
 Version 2.1 (beta 2):
 (fernap:)
 - Extra bytes can now be given in 2- and 3-byte chunks (with endianness handled) by enclosing in ()s and []s, respectively

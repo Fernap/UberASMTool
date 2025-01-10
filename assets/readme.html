@@ -250,15 +250,11 @@
         </ul>
 
         <p>
-            A. Placeholder for anything important enough to put here.  See the changelog for a full list.
-        </p>
-
-        <p>
             Q. Help!  ___ doesn't work anymore!
         </p>
 
         <p>
-            A. That's not a question!  See the <code class="path">incompatibilities.txt</code> file for known incompatibilities and what to do about them.
+            A. That's not a question!  See <a href="#Issues">Common Issues</a> for some potential hiccups, and see the <code class="path">incompatibilities.txt</code> file for known incompatibilities and what to do about them.
         </p>
 
         <p>
@@ -340,6 +336,9 @@ rom: MyHack.smc         ; ROM file to use.
             The following options are supported (and strictly speaking may be placed in any order in the whole command line):
         </p>
         <dl>
+            <dt><code>-d <directory></code></dt>
+            <dd>Sets UberASM Tool's current working directory to <code>directory</code>, which can itself be either an absolute path, or relative to the executable.  Any further relative paths will be relative to this, rather than the default of the executable.</dd>
+
             <dt><code>-p</code></dt>
             <dd>Disables the <code>Press any key to continue...</code> prompt when finished.</dd>
 
