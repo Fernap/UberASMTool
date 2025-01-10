@@ -2,6 +2,14 @@
 -                         Version History                           -
 ---------------------------------------------------------------------
 
+Version 2.1 (beta 2):
+(fernap:)
+- Extra bytes can now be given in 2- and 3-byte chunks (with endianness handled) by enclosing in ()s and []s, respectively
+- No longer generates assembly errors when parent folders (now resources too) contain a "!" character (reported by ninj)
+- Added support for a variable number of extra bytes with the ";>bytes any" command
+- Migrate to .NET 8
+- Fixed an old crash from any asar messages that contained a bogus C# format string (originally reported by Anas)
+
 Version 2.1 (beta 1):
 (fernap:)
 - Added some command line options: disable "press any key to continue"; early setting of quiet mode; print version number ... see readme for details
@@ -9,7 +17,7 @@ Version 2.1 (beta 1):
 - Fixed a crash when patching causes asar to expand the ROM (reported by Anas)
 - Now creates any necessary work folders that don't already exist at program startup (suggested by Underrout)
 - Added a 'deprecations' command to the list file to either show or hide asar's deprecation warnings (hide by default)
-- Added fallsa1rom support
+- Added fullsa1rom support
 - Now throws an error when resource files contain no valid labels (suggested by RPGHacker)
 - Updated to asar 1.91
 

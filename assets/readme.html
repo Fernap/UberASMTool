@@ -238,6 +238,16 @@
         <p>
             Q. What's new in 2.1?
         </p>
+        <p>
+            A. Version 2.1 of UberASM Tool is a modest update compared to the 2.0 update.
+        </p>
+        <ul>
+            <li>UAT now uses asar 1.91.  This will sometimes cause older resources to produce deprecation warnings.  These are hidden by default, but you can enable them (and you should when developing new resources!) with a new list file command.  See <a href="#ListFile>">The List File</a> for more information.</li>
+            <li>Some new command line options are available; see <a href="#Running">Running UberASM Tool</a> for details.</li>
+            <li>(For programmers) Resources can take a variable number of extra bytes in addition to a fixed number, as before.  See <a href="#ExtraBytes">Extra Bytes</a> for details.</li>
+            <li>Extra bytes can now be given in 2- and 3-byte chunks (with endianness handled) by enclosing in ()s and []s, respectively.  See See <a href="#ListFile>">The List File</a> for more information.</li>
+            <li>As before, a few tweaks and fixes.  See the changelog for a full list.</li>
+        </ul>
 
         <p>
             A. Placeholder for anything important enough to put here.  See the changelog for a full list.
