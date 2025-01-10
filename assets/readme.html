@@ -412,7 +412,7 @@ rom: MyHack.smc         ; ROM file to use.
         </p>
 
         <p>
-            If a resource uses extra bytes (see below for more information), you must specify them after the resource file name with a <code>:</code> followed by the actual bytes to use.  For more than one byte, separate them by spaces.  Bytes are given in hexadecimal by default (or explicitly by prefixing with <code>$</code> or <code>0x</code>), but you can also give them in decimal by prefixing with an <code>@</code>, or in binary by prefixing with a <code>%</code>.  You may also specify negative numbers here.  So for example, <code>-10</code>, <code>F0</code>, <code>$f0</code>, <code>@-16</code>, <code>@240</code>, and <code>%11110000</code> all refer to the same value.
+            If a resource uses extra bytes (see below for more information), you must specify them after the resource file name with a <code>:</code> followed by the actual bytes to use.  For more than one byte, separate them by spaces.  Bytes are given in hexadecimal by default (or explicitly by prefixing with <code>$</code> or <code>0x</code>), but you can also give them in decimal by prefixing with an <code>@</code>, or in binary by prefixing with a <code>%</code>.  You may also specify negative numbers here.  So for example, <code>-10</code>, <code>F0</code>, <code>$f0</code>, <code>-@16</code>, <code>@240</code>, and <code>%11110000</code> all refer to the same value.  As of version 2.1, you can also speciy 2- and 3-byte values as a single number.  For 2-byte values (words), enclose them in parentheses, e.g. <code>(@1000)</code>, and for 3-byte values (longs), enclose them in brackets, e.g. <code>[12AB00]</code>.  This is especially useful for supplying large decimal values to resources without having to convert to little-endian hex (see below for more info).
         </p>
 
         <p>
@@ -565,6 +565,9 @@ main:
         </p>
         <p>
             As of version 2.1, UAT also allows resources to take a variable number of extra bytes; to indicate this, use the line <code>;&gt;bytes any</code> instead.  This will cause UAT to accept any number of bytes (including none, max still 255) to be specified each time a resource is invoked in the list file.  In this case, the first byte passed to the resource will be a count of the number of bytes that were supplied in the list file (which may be 0 if none were specified), and the extra bytes themselves will start from the second byte.
+        </p>
+        <p>
+            Also as of version 2.1, users can specify word and long values as extra bytes in the list file (see above for how).  UAT will store these in little-endian order, so for example, if a user specifies a 2-byte value as <code>(@300)</code>, this will be stored in order as <code>2C 01</code>, since 300 decimal = 12C hex.
         </p>
         <p>
             Generally UAT passes a 16-bit pointer to the extra bytes for the current level/gamemode/overworld in $00-01.  So for example, to load the third extra byte, you can use the code:

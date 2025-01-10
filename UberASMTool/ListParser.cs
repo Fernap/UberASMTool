@@ -60,6 +60,9 @@ public static class ListParser
     private static readonly Parser<char, char> decimal_digit = Try(Any.Where(c => System.Char.IsAsciiDigit(c)));
     private static readonly Parser<char, char> binary_digit = OneOf('0', '1');
 
+    private static Parser<char, T> parens<T>(Parser<char, T> p) => Char('(').Then(p).Before(Char(')'));
+    private static Parser<char, T> brackets<T>(Parser<char, T> p) => Char('[').Then(p).Before(Char(']'));
+
     // prefixes will not consume input on failure
     // not allowing 0b and 0d for binary and decimal respectively since things like
     // 0b0 could either mean binary 0 or hex B0, since hex is the default
@@ -72,26 +75,38 @@ public static class ListParser
 
     // this is a little hacky, but whatever
     private static readonly Parser<char, Unit> digit_terminator =
-        OneOf(';', '#', ' ', '\t', ',').IgnoreResult().Or(eofeol.IgnoreResult());
+        OneOf(";# \t,()[]".ToCharArray()).IgnoreResult().Or(eofeol.IgnoreResult());
+    
     private static Parser<char, string> digits(Parser<char, char> digit, int max) =>
         from cs in digit.AtLeastOnce().Before(Lookahead(digit_terminator))
         let s = string.Concat(cs)
         where s.Length <= max
         select s;
 
-    private static readonly Parser<char, int> hex_byte =
-        hex_prefix.Optional().Then(digits(hex_digit, 2)).Select(s => System.Convert.ToInt32(s, 16));
-    private static readonly Parser<char, int> binary_byte =
-        binary_prefix.Then(digits(binary_digit, 8)).Select(s => System.Convert.ToInt32(s, 2));
-    private static readonly Parser<char, int> decimal_byte =
-        decimal_prefix.Then(digits(decimal_digit, 3)).Select(s => System.Convert.ToInt32(s, 10));
 
-    private static readonly Parser<char, int> positive_byte =
-        Try(binary_byte).
-        Or(Try(decimal_byte).Where(n => n < 256)).
-        Or(hex_byte);
-    private static readonly Parser<char, int> signed_byte =
-        Char('-').Optional().Then(positive_byte, (sign, x) => x > 0 && sign.HasValue ? 256 - x : x);
+    private static Parser<char, int> hex_num(int bytes) =>
+        hex_prefix.Optional().Then(digits(hex_digit, 2*bytes)).Select(s => System.Convert.ToInt32(s, 16));
+    private static Parser<char, int> binary_num(int bytes) =>
+        binary_prefix.Then(digits(binary_digit, 8*bytes)).Select(s => System.Convert.ToInt32(s, 2));
+    private static Parser<char, int> decimal_num(int bytes) =>
+        decimal_prefix.Then(digits(decimal_digit, 3*bytes)).Select(s => System.Convert.ToInt32(s, 10)).Where(n => n < 1 << 8*bytes);
+    // need 10 digits to overflow an int, so this is safe up to 3 bytes (log10(256) ~= 2.41)
+
+
+    private static Parser<char, int> positive_num(int bytes) =>
+        Try(binary_num(bytes)).
+        Or(Try(decimal_num(bytes))).
+        Or(hex_num(bytes));
+    private static Parser<char, int> signed_num(int bytes) =>
+        Char('-').Optional().Then(positive_num(bytes), (sign, x) => x > 0 && sign.HasValue ? (1 << 8*bytes) - x : x);
+    private static Parser<char, IEnumerable<int>> num_as_bytes(int bytes) =>
+        signed_num(bytes).Select<IEnumerable<int>>(x => Enumerable.Range(0, bytes).Select(i => (x >> 8 * i) & 0xFF));
+
+    private static readonly Parser<char, IEnumerable<int>> byte_list = num_as_bytes(1);
+    private static readonly Parser<char, IEnumerable<int>> word_list = parens(num_as_bytes(2));
+    private static readonly Parser<char, IEnumerable<int>> long_list = brackets(num_as_bytes(3));
+
+    private static readonly Parser<char, IEnumerable<int>> num_list = OneOf(byte_list, word_list, long_list);
 
     // ----------------------------------------------------------------
 
@@ -101,7 +116,8 @@ public static class ListParser
         Char('*').Before(Lookahead(digit_terminator)).ThenReturn(-1).
         Or(hex_prefix.Optional().Then(digits(hex_digit, 3)).Select(s => System.Convert.ToInt32(s, 16)));
     private static readonly Parser<char, IEnumerable<int>> extra_bytes =
-        signed_byte.SeparatedAndOptionallyTerminatedAtLeastOnce(skip_ws);
+        num_list.SeparatedAndOptionallyTerminatedAtLeastOnce(skip_ws).
+        Select<IEnumerable<int>>(x => x.SelectMany(y => y));
     private static readonly Parser<char, bool> onoff =
         Try(CIString("on").ThenReturn(true)).
         Or(Try(CIString("off").ThenReturn(false)));
@@ -119,7 +135,7 @@ public static class ListParser
     //      file_and_bytes.SeparatedAtLeastOnce(Try(comma.Between(skip_until_important)));
     private static readonly Parser<char, ResourceStatement.Call> file_and_bytes =
         from f in asm_file.OrFail("Invalid resource filename.").Before(skip_ws)
-        from bs in Char(':').OptionalThen(skip_ws.Then(Try(extra_bytes).OrFail("Invalid extra byte.")), Return(Enumerable.Empty<int>()))
+        from bs in colon.OptionalThen(skip_ws.Then(Try(extra_bytes).OrFail("Invalid extra byte.")), Return(Enumerable.Empty<int>()))
         select new ResourceStatement.Call { Filename = f, Bytes = bs.ToList() };
     private static readonly Parser<char,IEnumerable<ResourceStatement.Call>> files_and_bytes =
         file_and_bytes.Before(skip_ws).SeparatedAtLeastOnce(comma.Then(skip_until_important));
@@ -172,11 +188,13 @@ public static class ListParser
         select (ConfigStatement) new ResourceStatement { Number = num, Calls = fs.ToList() };
 
     private static readonly List<Parser<char, ConfigStatement>> all_statements =
-        new List<Parser<char, ConfigStatement>> { verbose_statement, deprecations_statement,
-                                                  level_statement, overworld_statement, gamemode_statement,
-                                                  global_statement, statusbar_statement, macrolib_statement, rom_statement,
-                                                  sprite_statement, freeram_statement,
-                                                  resource_statement };
+        [
+            verbose_statement, deprecations_statement,
+            level_statement, overworld_statement, gamemode_statement,
+            global_statement, statusbar_statement, macrolib_statement, rom_statement,
+            sprite_statement, freeram_statement,
+            resource_statement
+        ];
 
     private static readonly Parser<char, ConfigStatement> statement =
          CurrentPos.Then(OneOf(all_statements), (off, s) => { s.Line = off.Line; return s; } );
