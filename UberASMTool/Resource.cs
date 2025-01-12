@@ -1,12 +1,12 @@
 namespace UberASMTool;
 
-public class Resource
+public class Resource(string file, int id)
 {
     public static readonly HashSet<string> validSA1Labels = ["init", "main", "load", "end"];
     public static readonly HashSet<string> requiredLabels = ["init", "main", "load", "end", "nmi"];
 
-    public int ID { get; init; }       // each resource gets a unique ID -- starts at 0 and increments for each new resource
-    public string Filename { get; init; }
+    public int ID { get; init; } = id;
+    public string Filename { get; init; } = file;
 
     public bool SetDBR { get; private set; } = true;      // changed to false if the resource contains the ">dbr off" command
     public int NumBytes { get; private set; } = 0;        // how many extra bytes this resource uses (0 for none, the default)
@@ -19,12 +19,6 @@ public class Resource
 
     public HashSet<string> SA1Labels { get; } = [];    // which labels should be invoked with sa1 if possible (via >sa1 command)
     public List<Asarlabel> BytesLabels { get; } = [];  // ROM address of the ExtraBytes: sublabels for this resource
-
-    public Resource(string file, int id)
-    {
-        Filename = file;
-        ID = id;
-    }
 
     // attempts to read the file and processes any ";>" commands
     // currently just >dbr and >bytes

@@ -124,10 +124,11 @@ public class ResourceStatement : ConfigStatement
     {
         public string Filename { get; init; }
         public List<int> Bytes { get; init; }
+        public bool Skip { get; init; }
     }
 
     public int Number { get; set; }
-    public List<Call> Calls { get; init; } = new();
+    public List<Call> Calls { get; init; } = [];
 
 
     public bool Process(UberContext context, ResourceHandler handler, ROM rom)
@@ -148,17 +149,35 @@ public class ResourceStatement : ConfigStatement
 
         foreach (Call call in Calls)     // aaaaaaaaaaaaaaaaaa
         {
-            string file = Path.GetFullPath(Path.Combine(Program.MainDirectory, context.Directory, call.Filename)).Replace("\\", "/");
+            if (call.Skip && Number == -1)
+            {
+                Error($"Cannot skip resources in {context.Name.ToLower()} *.");
+                return false;
+            }
 
+            string file = Path.GetFullPath(Path.Combine(Program.MainDirectory, context.Directory, call.Filename)).Replace("\\", "/");
             Resource resource;
+
+            if (call.Skip)
+            {
+                resource = handler.GetResource(file);
+                if (resource == null || !context.GetMember(-1).CallsResource(resource))
+                {
+                    Error($"Cannot skip resource {call.Filename} since it hasn't (yet) been added to {context.Name.ToLower()} *.");
+                    return false;
+                }
+                member.AddSkip(resource);
+                return true;
+            }
+
             try
             {
-                if (!handler.GetOrAddResource(file, out resource, rom))    // a failure will already have an error printed (without the line num)
+                if (!handler.GetOrAddResource(file, out resource))    // a failure will already have an error printed (without the line num)
                     return false;
             }
             catch
             {
-                Error($"Could not read file \"{file}\"");
+                Error($"Could not read file \"{file}\".");
                 return false;
             }
 

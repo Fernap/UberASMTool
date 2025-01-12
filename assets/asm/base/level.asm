@@ -1,9 +1,6 @@
 macro CallLevelResources(offset)
     lda #<offset>
     pha
-
-    %LevelAllJSLs()                ; added by UAT in asm/work/resource_calls.asm
-
     rep #$30
     lda !level
     asl

@@ -1,9 +1,6 @@
 macro CallOverworldResources(offset)
     lda #<offset>
     pha
-
-    %OverworldAllJSLs()      ; added by UAT in asm/work/resource_calls.asm
-
     ldx $0DB3|!addr          ; 0 = mario, 1 = luigi
     lda $1F11|!addr,x        ; current OW map for player x
     asl

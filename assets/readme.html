@@ -199,7 +199,7 @@
 | |  | | '_ \ / _ \ '__/ /\ \  \___ \| |\/| |    | |/ _ \ / _ \| |
 | |__| | |_) |  __/ | / ____ \ ____) | |  | |    | | (_) | (_) | |
  \____/|_.__/ \___|_|/_/    \_\_____/|_|  |_|    |_|\___/ \___/|_|
-         Version 2.0                By Vitor Vilela & Fernap
+         Version 2.1                By Vitor Vilela & Fernap
 </pre>
 
         <p>
@@ -245,7 +245,8 @@
             <li>UAT now uses asar 1.91.  This will sometimes cause older resources to produce deprecation warnings.  These are hidden by default, but you can enable them (and you should when developing new resources!) with a new list file command.  See <a href="#ListFile>">The List File</a> for more information.</li>
             <li>Some new command line options are available; see <a href="#Running">Running UberASM Tool</a> for details.</li>
             <li>(For programmers) Resources can take a variable number of extra bytes in addition to a fixed number, as before.  See <a href="#ExtraBytes">Extra Bytes</a> for details.</li>
-            <li>Extra bytes can now be given in 2- and 3-byte chunks (with endianness handled) by enclosing in ()s and []s, respectively.  See See <a href="#ListFile>">The List File</a> for more information.</li>
+            <li>Extra bytes can now be given in 2- and 3-byte chunks (with endianness handled) by enclosing in <code>()</code>s and <code>[]</code>s, respectively.  See See <a href="#ListFile>">The List File</a> for more information.</li>
+            <li>Resources in level/gamemode/overworld <code>*</code> can now be omitted from specific levels by prefixing them with a </code>-</code>.  See <a href="#ListFile>">The List File</a> for details.</li>
             <li>As before, a few tweaks and fixes.  See the changelog for a full list.</li>
         </ul>
 
@@ -429,6 +430,10 @@ rom: MyHack.smc         ; ROM file to use.
         </p>
 
         <p>
+            As of version 2.1, you can now skip a resource that was used on level/overworld/gamemode <code>*</code>	by adding a <code>-</code> in front of the file name.  Note that for this to work, the resource must actually be used in <code>*</code>, and <code>*</code> must be placed <em>before</em> where it's actually being skipped.  A potential, nonobvious application of this feature is that you can skip a resource on <code>*</code> that uses extra bytes, and then re-add it with a different set of extra bytes to use a different set just for that level/overworld/gamemode.  See the example list file below for an example use.
+        </p>
+
+        <p>
             An example (just the resources are given; the other commands are omitted for clarity:
         </p>
 <pre>
@@ -441,7 +446,9 @@ level:
        waves.asm, gradient.asm
 
 overworld:
-* music.asm
+* music.asm, yoshi.asm : 00
+0 -music.asm
+1 -yoshi.asm, yoshi.asm:FF
 
 level:
 107 special.asm:@100, ../overworld/music.asm
@@ -451,7 +458,9 @@ level:
             <li>level 105 is assigned the resource <code class="path">incio.asm</code> (which is in the <code class="path">level/</code> folder)</li>
             <li>level 106 is assigned the three resources <code class="path">incio.asm</code>, <code class="path">waves.asm</code>, and <code class="path">gradient.asm</code></li>
             <li><code>overworld:</code> says we're now giving resources for overworld maps</li>
-            <li>the resource <code class="path">music.asm</code> (in the <code class="path">overworld/</code> folder) is assigned to all overworlds</li>
+            <li>the resource <code class="path">music.asm</code> (in the <code class="path">overworld/</code> folder) is assigned to all overworlds, as is <code class="path">yoshi.asm</code> with an extra byte of <code>00</code></li>
+            <li>overworld map 0 skips calling <code class="path">music.asm</code> (but still calls <code class="path">yoshi.asm</code>)</li>
+            <li>overworld map 1 skips calling <code class="path">yoshi.asm</code>, but then re-adds it with a different extra byte value of </code>FF</code>
             <li><code>level:</code> switches back to specifying resources for levels</li>
             <li>level 107 is assigned the resource <code class="path">special.asm</code> (which takes one extra byte) with an extra byte of 100 (decimal), and then the resource <code class="path">music.asm</code> from the <code class="path">overworld/</code> folder.</li>
         </ul>

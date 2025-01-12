@@ -11,8 +11,9 @@ public class ResourceCall
 // keeps information about what resources are called for a particular context member (ie, level/ow/gm)
 public class ContextMember
 {
-    private List<ResourceCall> calls { get; set; } = new();
-    public bool Empty => !calls.Any();
+    private List<ResourceCall> calls = [];
+    private HashSet<Resource> skips = [];
+    public bool Empty => calls.Count == 0 && skips.Count == 0;     // maybe it would make more sense to just init as true, and have list processor set it to false if it's listed
 
     // could memoize this since once it becomes true, it never changes
     // but this is more future-proof in case that ever changes
@@ -28,6 +29,9 @@ public class ContextMember
 
     public bool CallsResource(Resource res) => calls.Any(x => x.ToCall == res);
 
+    public void AddSkip(Resource resource) => skips.Add(resource);
+    public bool SkipsResource(Resource resource) => skips.Contains(resource);
+
     public void GenerateExtraBytes(StringBuilder output, Resource resource, string sublabel)
     {
         ResourceCall call = calls.Find(x => x.ToCall == resource);
@@ -36,25 +40,28 @@ public class ContextMember
 
         // note only the first call to this resource for this level/ow/gm is used, which is okay since we're not allowing duplicate calls
         output.AppendLine($".{sublabel}:");
+        string byte_str = String.Join(", ", call.Bytes.Select(x => $"${x:X2}"));
         if (resource.VarBytes)
             if (call.Bytes.Count == 0)
                 output.AppendLine("    db 0");
             else
-                output.AppendFormat("    db {0:d}, {1}", call.Bytes.Count, String.Join(", ", call.Bytes.Select(x => $"${x:X2}")));
+                output.AppendFormat($"    db {call.Bytes.Count}, {byte_str}");
         else
-            output.AppendFormat("    db {0}", String.Join(", ", call.Bytes.Select(x => $"${x:X2}")));
+            output.AppendFormat($"    db {byte_str}");
         output.AppendLine();
     }
 
     // might be better to set/keep type/which at construction time rather than passing it in
-    public void GenerateCalls(StringBuilder output, bool nmi, string type, string which)
+    public void GenerateCalls(StringBuilder output, bool nmi, string type, string which, Func<Resource, bool> skip)
     {
         foreach (ResourceCall call in calls)
         {
+            if (skip(call.ToCall))
+                continue;
             // don't call for NMI if this resource doesn't have an nmi: label
             if (nmi && !call.ToCall.HasNMI)
                 continue;
-            if (call.Bytes.Any())
+            if (call.Bytes.Count > 0)
                 output.AppendLine($"    %CallUberResourceWithBytes({call.ToCall.ID}, {(nmi ? "1" : "0")}, {type}, {which})");
             else
                 output.AppendLine($"    %CallUberResource({call.ToCall.ID}, {(nmi ? "1" : "0")})");

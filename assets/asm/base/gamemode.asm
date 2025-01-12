@@ -1,8 +1,5 @@
 macro CallGamemodeResources()
     phx                      ; this call macro expects the offset in X due to needing to use A for other stuff
-
-    %GamemodeAllJSLs()       ; added by UAT in asm/work/resource_calls.asm
-
     rep #$30
     lda !previous_mode
     asl

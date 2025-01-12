@@ -133,12 +133,18 @@ public static class ListParser
     // will parse, but will think it's 105 with file "106 foo.asm"
     //    private static readonly Parser<char, IEnumerable<ResourceStatement.UberResource>> files_and_bytes =
     //      file_and_bytes.SeparatedAtLeastOnce(Try(comma.Between(skip_until_important)));
+
+    private static readonly Parser<char, ResourceStatement.Call> skip_file =
+        Char('-').Then(asm_file.OrFail("Invalid resource filename.")).
+        Select(f => new ResourceStatement.Call { Filename = f, Bytes = [], Skip = true });
+
     private static readonly Parser<char, ResourceStatement.Call> file_and_bytes =
         from f in asm_file.OrFail("Invalid resource filename.").Before(skip_ws)
         from bs in colon.OptionalThen(skip_ws.Then(Try(extra_bytes).OrFail("Invalid extra byte.")), Return(Enumerable.Empty<int>()))
-        select new ResourceStatement.Call { Filename = f, Bytes = bs.ToList() };
+        select new ResourceStatement.Call { Filename = f, Bytes = bs.ToList(), Skip = false };
+
     private static readonly Parser<char,IEnumerable<ResourceStatement.Call>> files_and_bytes =
-        file_and_bytes.Before(skip_ws).SeparatedAtLeastOnce(comma.Then(skip_until_important));
+        (skip_file.Or(file_and_bytes)).Before(skip_ws).SeparatedAtLeastOnce(comma.Then(skip_until_important));
 
     // ----------------------------------------------------------------------
 

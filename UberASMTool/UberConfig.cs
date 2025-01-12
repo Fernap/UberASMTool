@@ -3,9 +3,9 @@ namespace UberASMTool;
 public class UberConfig
 {
     public string ROMFile { get; private set; } = null;
-    UberContext levelContext = new UberContext(UberContextType.Level, 512);
-    UberContext gamemodeContext = new UberContext(UberContextType.Gamemode, 256);
-    UberContext overworldContext = new UberContext(UberContextType.Overworld, 7);
+    private UberContext levelContext = new(UberContextType.Level, 512);
+    private UberContext gamemodeContext = new(UberContextType.Gamemode, 256);
+    private UberContext overworldContext = new(UberContextType.Overworld, 7);
 
     public bool ProcessList(IEnumerable<ConfigStatement> statements, ResourceHandler handler, ROM rom)
     {
@@ -84,7 +84,7 @@ public class UberConfig
     }
 
 
-    private bool CheckCommandSpecified(bool val, string cmd)
+    private static bool CheckCommandSpecified(bool val, string cmd)
     {
         if (!val)
             MessageWriter.Write(VerboseLevel.Quiet, $"Error: no \"{cmd}\" command found.");

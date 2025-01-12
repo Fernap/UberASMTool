@@ -28,11 +28,7 @@ NMIHijack:
 ; gamemode nmi
 
 .Gamemode:
-    if !UberGamemodeNMIAll
-        %GamemodeAllNMIJSLs()       ; added by UAT in asm/work/resource_calls.asm
-    endif
-
-    if !UberGamemodeNMINormal
+    if !UberGamemodeNMI
         lda $0100|!addr
         rep #$30
         and #$00FF
@@ -64,14 +60,8 @@ NMIHijack:
             cmp #$05
             bcc .Overworld
         endif
+
     +
-    endif
-
-    if !UberLevelNMIAll
-        %LevelAllNMIJSLs()          ; added by UAT in asm/work/resource_calls.asm
-    endif
-
-    if !UberLevelNMINormal
         rep #$30
         lda !level
         asl
@@ -81,9 +71,7 @@ NMIHijack:
         sep #$30
         ldx #$00
         jsr ($0000,x)
-    endif
 
-    if !UberLevelNMI
         ; return since overworld won't run also
         pla : !STAScratchLow
         pla : !STAScratchHigh
@@ -103,14 +91,8 @@ NMIHijack:
         beq +
         cmp #$0E
         bne .Return
+
     +
-    endif
-
-    if !UberOverworldNMIAll
-        %OverworldAllNMIJSLs()      ; added by UAT in asm/work/resource_calls.asm
-    endif
-
-    if !UberOverworldNMINormal
         ldx $0DB3|!addr          ; 0 = mario, 1 = luigi
         lda $1F11|!addr,x        ; current OW map for player x
         asl

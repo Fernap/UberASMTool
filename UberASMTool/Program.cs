@@ -2,9 +2,16 @@
 // Make sure to sync any changes in assets/asm to the folder that VS puts the executable for testing. (or vice versa)
 
 // TODO:
+// C# now allowss property auto initializers to be "required", which would have caught one that I added later, had I forgotten to add that in
+// this is probably good practice to use
+
 // if a resource fails to load (invalid bytes command, and maybe file not found), add it, but mark it as failed, so that subsequent uses
 //   of it don't try to reload it and get the same error over and over...also don't want to say "expected 0 bytes" for a malformed
 //   bytes command
+
+// right now, every specified context member with an empty call list gets its own rts
+// this is especially noticeable if you have like 40 levels, only one of which has nmi...then the other 39 will get their own rts
+// it's not a huge difference, but there's a possible small size optimization here
 
 global using System;
 global using System.Collections.Generic;

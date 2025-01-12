@@ -3,6 +3,7 @@
 ---------------------------------------------------------------------
 
 - Added a -d command line option to set the working directory (thanks to RPGHacker for the suggestion and feedback)
+- Resources added to level/gamemode/overworld * can now be skipped on specific levels by prefiing them with a "-" in the list file.  (Thanks to Segment1Zone2 for prompting me to take another look at this).
 
 Version 2.1 (beta 2):
 (fernap:)
