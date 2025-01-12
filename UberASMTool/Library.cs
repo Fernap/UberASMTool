@@ -4,7 +4,7 @@ public class LibraryHandler
 {
     public int Size { get; private set; } = 0;
 
-    private Dictionary<string, int> labels = new();
+    private Dictionary<string, int> labels = [];
 
 
     // patches all the library files into the rom and creates the label file all at once
@@ -71,13 +71,13 @@ public class LibraryHandler
 
         foreach (Asarlabel label in Asar.getlabels())
         {
-            if (label.Name.Contains(":"))      // skips macro-local and +/- labels
+            if (label.Name.Contains(':'))      // skips macro-local and +/- labels
                 continue;
-            if (label.Name.Contains("."))      // also skips struct fields, which aren't legal label names either
+            if (label.Name.Contains('.'))      // also skips struct fields, which aren't legal label names either
                 continue;
             if (label.Name.StartsWith("UberRoutine_"))
             {
-                if (!rom.AddRoutine(file, label.Name.Substring("UberRoutine_".Length), label.Location))
+                if (!rom.AddRoutine(file, label.Name["UberRoutine_".Length..], label.Location))
                     return false;
                 continue;
             }

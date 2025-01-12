@@ -131,7 +131,7 @@ public class ResourceStatement : ConfigStatement
     public List<Call> Calls { get; init; } = [];
 
 
-    public bool Process(UberContext context, ResourceHandler handler, ROM rom)
+    public bool Process(UberContext context, ResourceHandler handler)
     {
         if (Number < -1 || Number >= context.Size)
         {

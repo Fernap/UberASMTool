@@ -70,7 +70,7 @@ public class UberConfig
                         _ => throw new ArgumentException()
                     };
 
-                    valid &= s.Process(context, handler, rom);
+                    valid &= s.Process(context, handler);
                     break;
             }
         }

@@ -5,14 +5,14 @@ using AsarCLR;
 public class ROM
 {
     public int ExtraSize { get; private set; } = 0;      // running extra insert size -- prots and shared routines
-    public List<int> Cleans { get; private set; } = new();
+    public List<int> Cleans { get; private set; } = [];
     public bool Deprecations { get; set; } = false;
 
     private byte[] romData;        // contains the actual ROM data (without the header if there is one)
     private byte[] headerData;     // stays null if ROM is headerless
     private string romPath;
-    private Dictionary<string, string> defines = new();
-    private HashSet<string> routines = new();
+    private Dictionary<string, string> defines = [];
+    private HashSet<string> routines = [];
 
     // Add a define -- not implementing a way to remove, and not checking for duplicate keys
     // don't really need anything fancier
@@ -115,7 +115,7 @@ public class ROM
     {
         try
         {
-            using FileStream fs = new FileStream(romPath, FileMode.Create);
+            using FileStream fs = new(romPath, FileMode.Create);
             if (headerData != null)
                 fs.Write(headerData, 0, headerData.Length);
             fs.Write(romData, 0, romData.Length);
@@ -187,10 +187,10 @@ public class ROM
             int space = print.IndexOf(' ');
             if (space > 0)
             {
-                command = print.Substring(0, space);
+                command = print[..space];
                 try
                 {
-                    value = Convert.ToInt32(print.Substring(space + 1), 16);
+                    value = Convert.ToInt32(print[(space + 1)..], 16);
                 }
                 catch { }
             }
