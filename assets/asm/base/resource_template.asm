@@ -36,7 +36,7 @@ if !sa1
         rtl
 
     .SA1:
-        if <setdbr>
+        if !UberSetDBR
             phk
             plb
         endif
