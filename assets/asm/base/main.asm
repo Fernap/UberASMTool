@@ -14,7 +14,7 @@ incsrc "../work/resource_labels.asm"
 
 ORG $05D8B7
     BRA +
-    NOP #3        ;the levelnum patch goes here in many ROMs, just skip over it
+    skip 3        ;the levelnum patch goes here in many ROMs, just skip over it
 +
     REP #$30
     LDA $0E        
