@@ -242,11 +242,11 @@
             A. Version 2.1 of UberASM Tool is a modest update compared to the 2.0 update.
         </p>
         <ul>
-            <li>UAT now uses asar 1.91.  This will sometimes cause older resources to produce deprecation warnings.  These are hidden by default, but you can enable them (and you should when developing new resources!) with a new list file command.  See <a href="#ListFile>">The List File</a> for more information.</li>
+            <li>UAT now uses asar 1.91.  This will sometimes cause older resources to produce deprecation warnings.  These are hidden by default, but you can enable them (and you should when developing new resources!) with a new list file command.  See <a href="#ListFile">The List File</a> for more information.</li>
             <li>Some new command line options are available; see <a href="#Running">Running UberASM Tool</a> for details.</li>
             <li>(For programmers) Resources can take a variable number of extra bytes in addition to a fixed number, as before.  See <a href="#ExtraBytes">Extra Bytes</a> for details.</li>
-            <li>Extra bytes can now be given in 2- and 3-byte chunks (with endianness handled) by enclosing in <code>()</code>s and <code>[]</code>s, respectively.  See See <a href="#ListFile>">The List File</a> for more information.</li>
-            <li>Resources in level/gamemode/overworld <code>*</code> can now be omitted from specific levels by prefixing them with a </code>-</code>.  See <a href="#ListFile>">The List File</a> for details.</li>
+            <li>Extra bytes can now be given in 2- and 3-byte chunks (with endianness handled) by enclosing in <code>()</code>s and <code>[]</code>s, respectively.  See <a href="#ListFile">The List File</a> for more information.</li>
+            <li>Resources in level/gamemode/overworld <code>*</code> can now be omitted from specific levels by prefixing them with a </code>-</code>.  See <a href="#ListFile">The List File</a> for details.</li>
             <li>As before, a few tweaks and fixes.  See the changelog for a full list.</li>
         </ul>
 
@@ -337,7 +337,7 @@ rom: MyHack.smc         ; ROM file to use.
             The following options are supported (and strictly speaking may be placed in any order in the whole command line):
         </p>
         <dl>
-            <dt><code>-d <directory></code></dt>
+            <dt><code>-d &lt;directory&gt;</code></dt>
             <dd>Sets UberASM Tool's current working directory to <code>directory</code>, which can itself be either an absolute path, or relative to the executable.  Any further relative paths will be relative to this, rather than the default of the executable.</dd>
 
             <dt><code>-p</code></dt>
