@@ -48,7 +48,6 @@ public class ContextMember
                 output.AppendLine($"    db {call.Bytes.Count}, {byte_str}");
         else
             output.AppendLine($"    db {byte_str}");
-        output.AppendLine();
     }
 
     // might be better to set/keep type/which at construction time rather than passing it in
