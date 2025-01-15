@@ -45,9 +45,9 @@ public class ContextMember
             if (call.Bytes.Count == 0)
                 output.AppendLine("    db 0");
             else
-                output.AppendFormat($"    db {call.Bytes.Count}, {byte_str}");
+                output.AppendLine($"    db {call.Bytes.Count}, {byte_str}");
         else
-            output.AppendFormat($"    db {byte_str}");
+            output.AppendLine($"    db {byte_str}");
         output.AppendLine();
     }
 
