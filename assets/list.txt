@@ -5,7 +5,7 @@
 verbose: on
 
 ; ROM file to use, may be overridden on command line, optional here if so
-rom: smw.smc
+rom: ../myrom.smc
 
 ; Level resources
 level:
