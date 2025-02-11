@@ -1,21 +1,11 @@
-UberASM Tool
-============
+# UberASM Tool
+UberASM Tool is a program for managing UberASM resources for Super Mario World romhacks.  UberASM Tool applies several hijacks in key places in an SMW ROM which allow it to run code for these resources at specific times during the game, such as once per frame during levels. This approach offers a good compromise between flexibility and ease of managing resources; resources can be added, removed, or applied to different levels easily.
 
-"UberASM Tool" is a tool that allows to insert common codes without relying to
-patches. The main objective is reducing the number of patches and at the same
-time allow for inserting ASM file easier and develop new codes quicker compared
-to other approaches.
-
-## Building
-How to make the ZIP file for uploading a release:
-
-1. Compile the C# source code using Visual Studio Community.
-2. Copy UberASMTool.exe and UberASMTool.pdb from UberASMTool/bin/Release to the
-assets folder.
-3. Copy asar.dll from the UberASMTool folder to the assets folder.
-4. Create a ZIP file from all files inside assets.
+## Documentation
+For usage details, see the readme bundled with the download.  You can also view the [current version here](https://fernap.github.io/UberASMTool/readme_2_1.html).
 
 ## Examples
+There are some sample resources you can view in the [examples folder](examples).
 
-At [examples] there is some ASM files that can be used for testing and/or for
-figuring out some specific UberASM Tool features.
+## Building
+The current verson of UberASM Tool was built with Visual Studio 2023 Community and .NET 8.
