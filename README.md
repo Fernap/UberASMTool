@@ -8,4 +8,4 @@ For usage details, see the readme bundled with the download.  You can also view 
 There are some sample resources you can view in the [examples folder](examples).
 
 ## Building
-The current verson of UberASM Tool was built with Visual Studio 2023 Community and .NET 8.
+The current verson of UberASM Tool was built with Visual Studio 2022 Community and .NET 8.
