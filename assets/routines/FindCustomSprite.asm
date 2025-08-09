@@ -3,7 +3,7 @@
 ;
 ; Input:
 ;     X   : sprite slot to begin searching in, plus 1 (searches downwards, safe to pass $00, which will always result in no match)
-;     $00 : the sprite number to search for (custom sprites will be ignored)
+;     $00 : the sprite number to search for (vanilla sprites will be ignored)
 ;
 ; Output:
 ;     X : sprite slot containing the sprite (which might be in a dead state), or $FF is not found
@@ -21,7 +21,7 @@
     bne ?-
     lda !extra_bits,x
     and #$08
-    bne ?-
+    beq ?-
 
 ?.found:
     clc
