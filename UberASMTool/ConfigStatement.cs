@@ -101,7 +101,7 @@ public class FreeramStatement : ConfigStatement
         }
 
         already = true;
-        if (!(Addr >= 0x7E0000 && Addr <= 0x7FFFFF) || (Addr >= 0x400000 && Addr <= 0x41FFFF))
+        if (!((Addr >= 0x7E0000 && Addr <= 0x7FFFFF) || (Addr >= 0x400000 && Addr <= 0x41FFFF)))
         {
             Error("Freeram address must be in the range 7E0000-7FFFFF or 400000-41FFFF.");
             return false;
