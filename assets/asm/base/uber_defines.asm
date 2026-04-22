@@ -83,7 +83,7 @@ macro prot_file(file, label, ...)
             elseif sizeof(...) == 1
                 incbin "../../<file>":<...[0]>..0
             elseif sizeof(...) == 2
-                if <size> <= 0
+                if <...[1]> <= 0
                     error "%prot_file(): <size> cannot be <= 0."
                 endif
                 incbin "../../<file>":<...[0]>..(<...[0])+(<...[1]>)
