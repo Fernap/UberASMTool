@@ -703,9 +703,9 @@ nmi:
             <dt><code>%invoke_sa1(label)</code></dt>
             <dd>Useful if you want to run some code on the SA-1 CPU; see <a href="#SA1">SA-1</a> for more detail.</dd>
 
-            <dt><code>%prot_file(file, label)</code></dt>
+            <dt><code>%prot_file(file, label [, start [, size]])</code></dt>
             <dt><code>%prot_source(file, label)</code></dt>
-            <dd>These include binary and source files respectively at the given label, but puts them in their own freedata/freecode blocks, especially useful for large binary files.</dd>
+            <dd>These include binary and source files respectively at the given label, but puts them in their own freedata/freecode blocks, especially useful for large binary files.  Starting with v2.2, you can also optionally specify the <code>start</code> parameter for <code>%prot_file()</code> to tell UAT to begin at <code>start</code> bytes into the file instead of at the beginning.  You can also then optionally specify the <code>size</code> parameter to tell UAT how many bytes of the file it should include (if omitted, it will include until the end of the file).</dd>
         </dl>
         <p>
             The global code file (given by <code>global:</code> in the list file) has an <code>init:</code> label that you can place code directly under.  It's called by UberASM Tool fairly early in SMW's overall initailization, and code here should end with <code>RTS</code> instead of <code>RTL</code>.  In most cases though, you can equiavlently just use game mode 0's <code>init:</code> instead, since very few things happen between the two.

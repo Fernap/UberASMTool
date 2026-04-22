@@ -68,13 +68,28 @@ macro UberRoutine(name)
 endmacro
 
 ; Protect binary file.
-macro prot_file(file, label)
+; usage: %prot_file(file, label) - incbins file at the the specified label
+;        %prot_file(file, label, start) - the same, but begins at <start> bytes into the file
+;        %prot_file(file, label, start, size) - the same, but begins at <start> bytes into the file and only includes <size> bytes
+
+macro prot_file(file, label, ...)
     pushpc
         freedata cleaned
         print "_startl ", pc
         
         <label>:
-            incbin "../../<file>"
+            if sizeof(...) == 0
+                incbin "../../<file>"
+            elseif sizeof(...) == 1
+                incbin "../../<file>":<...[0]>..0
+            elseif sizeof(...) == 2
+                if <size> <= 0
+                    error "%prot_file(): <size> cannot be <= 0."
+                endif
+                incbin "../../<file>":<...[0]>..(<...[0])+(<...[1]>)
+            else
+                error "Too many arguments passed to %prot_file()."
+            endif
         print "_endl ", pc
     pullpc
 endmacro
