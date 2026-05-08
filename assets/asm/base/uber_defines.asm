@@ -86,7 +86,7 @@ macro prot_file(file, label, ...)
                 if <...[1]> <= 0
                     error "%prot_file(): <size> cannot be <= 0."
                 endif
-                incbin "../../<file>":<...[0]>..(<...[0])+(<...[1]>)
+                incbin "../../<file>":<...[0]>..(<...[0]>)+(<...[1]>)
             else
                 error "Too many arguments passed to %prot_file()."
             endif
